@@ -7,6 +7,9 @@
 *.dll
 *.so
 *.dylib
+# ide
+.idea/
+config/certs/
 
 # Test binary, built with `go test -c`
 *.test
