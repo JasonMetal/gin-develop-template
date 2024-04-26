@@ -1,9 +1,48 @@
-FROM testdocker-registry.web-site.com:5000/alpine:tzdata
-COPY config/ /server/config/
-ADD ./grpc-server /server/grpc-server
-RUN  chmod u+x /server/grpc-server
-WORKDIR /server
+#FROM testdocker-registry.web-site.com:5000/alpine:tzdata
+#COPY config/ /server/config/
+#ADD ./grpc-server /server/grpc-server
+#RUN  chmod u+x /server/grpc-server
+#WORKDIR /server
+#EXPOSE 50052
+#COPY run-grpc.sh /run-grpc.sh
+#RUN chmod u+x /run-grpc.sh
+#CMD ["/run-grpc.sh"]
+
+FROM golang:alpine AS builder
+
+LABEL stage=gobuilder
+
+ENV CGO_ENABLED 0
+ENV GOPROXY https://goproxy.cn,direct
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+
+RUN apk update --no-cache && apk add --no-cache tzdata
+
+WORKDIR /build
 EXPOSE 50052
-COPY run-grpc.sh /run-grpc.sh
-RUN chmod u+x /run-grpc.sh
-CMD ["/run-grpc.sh"]
+ADD go.mod .
+ADD go.sum .
+
+COPY ./submodule/services-proto.git ./submodule/services-proto.git
+COPY ./submodule/support-go.git ./submodule/support-go.git
+
+RUN go mod download
+COPY . .
+RUN go build -ldflags="-s -w" -o /app/grpc-server grpc-server.go
+
+# nomal
+#FROM alpine
+# smaller
+FROM scratch
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /usr/share/zoneinfo/Asia/Shanghai /usr/share/zoneinfo/Asia/Shanghai
+ENV TZ Asia/Shanghai
+
+WORKDIR /app
+
+COPY ./config /app/config
+
+COPY --from=builder /app/grpc-server /app/grpc-server
+
+CMD ["./grpc-server"]
