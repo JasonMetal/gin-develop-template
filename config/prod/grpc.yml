@@ -1,0 +1,20 @@
+server:
+  -
+    name: user
+    endpoint: 172.16.0.14:50001
+    initialCap: 5    #初始连接数
+    maxCap: 300      #最大连接数
+    idleTimeout: 480 #在池子存活时间
+  -
+    name: goods
+    endpoint: 172.16.0.14:50101 # 本地
+    initialCap: 5    #初始连接数
+    maxCap: 100      #最大连接数
+    idleTimeout: 300 #在池子存活时间
+  -
+    name: pay
+    endpoint: 172.16.0.14:51015 # 本地
+    initialCap: 5    #初始连接数
+    maxCap: 100      #最大连接数
+    idleTimeout: 300 #在池子存活时间
+

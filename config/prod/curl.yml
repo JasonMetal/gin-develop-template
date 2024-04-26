@@ -1,0 +1,3 @@
+curl:
+  apibaidudomain: "https://api.aabbcc.com"
+  getTestData: "/json/tongji/v1/ReportService/getData"

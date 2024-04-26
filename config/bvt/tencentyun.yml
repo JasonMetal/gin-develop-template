@@ -1,0 +1,8 @@
+tencentyun:
+  1:
+    appId: 123456
+    secretId: ABCEDFGIW12345VFl25tSmqgKkvrZ3JKnbaN
+    secretKey: ABCDEFGHyHK9j4HFyTjlX3KM7dtCH8l9
+    Region: ap-guangzhou
+    DurationSeconds: 1800
+    bucket: test_platform

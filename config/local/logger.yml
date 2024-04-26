@@ -1,0 +1,9 @@
+logger:
+  level: "debug"  # 正式环境配置成error
+  logType: "daily" # 文件名
+  logPath: "/tmp/"
+  filename: "run.log"  # 日志文件路径
+  maxSize: 100  # MB
+  maxBackups: 3  # 最多保留3个备份
+  maxAge: 30  #days
+  compress: true  # 是否压缩 disabled by default,压缩方法 gzip

@@ -1,0 +1,26 @@
+mysql:
+  film:
+    maxOpenConns: 50 #设置空闲连接池中的最大连接数
+    maxIdleConns: 3 #设置空闲连接池中的最大连接数。
+    maxLifetime: 240 #设置可重用连接的最长时间 0不限制
+    debug: true
+    charset: utf8mb4
+    servers:
+      - host: 127.0.0.1
+        port: 3306
+        db: test
+        user: root
+        passwd: root
+
+  other:
+    maxOpenConns: 50 #设置空闲连接池中的最大连接数
+    maxIdleConns: 3 #设置空闲连接池中的最大连接数。
+    maxLifetime: 240 #设置可重用连接的最长时间 0不限制
+    debug: true
+    charset: utf8mb4
+    servers:
+      - host: 127.0.0.2
+        port: 3306
+        db: test_platform
+        user: root
+        passwd: abc123456

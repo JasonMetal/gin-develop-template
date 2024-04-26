@@ -1,0 +1,6 @@
+[submodule "submodule/services-proto.git"]
+	path = submodule/services-proto.git
+	url = git@github.com:JasonMetal/submodule-services-proto.git
+[submodule "submodule/support-go.git"]
+	path = submodule/support-go.git
+	url = git@github.com:JasonMetal/submodule-support-go.git

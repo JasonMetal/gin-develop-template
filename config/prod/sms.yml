@@ -1,0 +1,11 @@
+tencent:
+  SmsSdkAppId: 123456
+  SecretId: ABCEDFGIW12345VFl25tSmqgKkvrZ3JKnbaN
+  SecretKey: ABCDEFGHyHK9j4HFyTjlX3KM7dtCH8l9
+  MobileCode: "+86"
+  ReqMethod: POST
+  Endpoint: sms.tencentcloudapi.com
+  Region: ap-guangzhou
+  SignMethod: TC3-HMAC-SHA256
+  SignName: 短信主体名XXX
+aliyun:
