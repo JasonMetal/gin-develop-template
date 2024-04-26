@@ -21,7 +21,7 @@ replace (
 
 # 3. git 子模块初始化
 
-若根目录下无 `submodule` 则新增 `submodule` 文件夹
+#### 若根目录下无 `submodule` 则新增 `submodule` 文件夹
 
 mkdir submodule
 
