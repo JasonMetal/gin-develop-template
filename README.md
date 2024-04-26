@@ -51,7 +51,7 @@ go mod tidy
 #### 0. go build -o go-test8888 cli.go
 #### 测试服
 #### 1. ./go-test -e test savePageDataCron
-#### 监控人物则，在linux下用 `supervisord`
+#### linux下用 `supervisord` 进行监控相关任务
 
 ```shell
 
