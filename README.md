@@ -21,7 +21,8 @@ replace (
 
 # 3. git 子模块初始化
 
-根目录下 新增 submodule 文件夹
+若根目录下无 `submodule` 则新增 `submodule` 文件夹
+
 mkdir submodule
 
 git submodule add git@github.com:JasonMetal/submodule-services-proto.git submodule/services-proto.git
@@ -50,7 +51,8 @@ go mod tidy
 #### 0. go build -o go-test8888 cli.go
 #### 测试服
 #### 1. ./go-test -e test savePageDataCron
-#### 运维用 supervisord
+#### 监控人物则，在linux下用 `supervisord`
+
 ```shell
 
 directory = /home/www/go-test
