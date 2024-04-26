@@ -1,10 +1,3 @@
-/**
-* @Author: qsx
-* @Description:
-* @File: respEntity
-* @Module: cookbook
-* @Date: 2022-10-12 16:13:33
- */
 package testRespEntity
 
 import (

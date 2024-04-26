@@ -1,15 +1,8 @@
-/**
-* @Author: qsx
-* @Description:
-* @File: controller
-* @Module: crawler
-* @Date: 2022-10-12 16:13:33
- */
 package crawlerLogic
 
 import (
 	"bufio"
-	_ "develop-template/app/entity/resp/typeRespEntity"
+	_ "develop-template/app/entity/resp/testRespEntity"
 	configLib "github.com/olebedev/config"
 	"github.com/robfig/cron/v3"
 	"log"

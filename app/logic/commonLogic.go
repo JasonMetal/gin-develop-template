@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"develop-template/app/constant"
 	"math"
 )
 
@@ -14,17 +15,14 @@ func GetLastPage(total int64, limit int) int {
 	return int(lastPage)
 }
 
-// InitCodion 初始化分页
-func InitCodion(initPage, initLimit int) (page, limit, offset int) {
-	page = initPage
+// InitCondition 初始化分页
+func InitCondition(initPage, initLimit int) (page, limit, offset int) {
 	if initPage == 0 {
-		page = 1
+		initPage = constant.InitPage
 	}
-	limit = initLimit
-	if limit == 0 {
-		limit = 10
-	}
-	offset = (page - 1) * limit
 
-	return
+	if initLimit == 0 {
+		initLimit = constant.InitLimit
+	}
+	return initPage, initLimit, (initPage - 1) * initLimit
 }

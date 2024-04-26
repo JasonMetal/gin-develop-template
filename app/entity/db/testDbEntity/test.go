@@ -1,10 +1,3 @@
-/**
-* @Author: 渣渣辉
-* @Description:
-* @File: dbEntity
-* @Module:
-* @Date:
- */
 package testDbEntity
 
 type TestData struct {

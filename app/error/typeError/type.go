@@ -1,10 +1,3 @@
-/**
-* @Author: 渣渣辉
-* @Description:
-* @File: error
-* @Module: newsPage
-* @Date: 2022-11-04 09:41:03
- */
 package typeError
 
 const (
