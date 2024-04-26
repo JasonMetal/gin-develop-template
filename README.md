@@ -25,12 +25,15 @@ replace (
 mkdir submodule
 
 git submodule add git@github.com:JasonMetal/submodule-services-proto.git submodule/services-proto.git
+
 git submodule add git@github.com:JasonMetal/submodule-support-go.git submodule/support-go.git
 
 
 # 4. 同步子模块
 ##### 遇到 类似 fatal: A git directory for 'submodule/services-proto.git' is found locally with remote(s)
+
 git submodule add --force git@github.com:JasonMetal/submodule-services-proto.git submodule/services-proto.git
+
 git submodule add --force git@github.com:JasonMetal/submodule-support-go.git submodule/support-go.git
 
 ##### 如：遇到 The system cannot find the file specified
