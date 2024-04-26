@@ -47,9 +47,10 @@ go env -w GOPRIVATE=*.github.com
 # 6. 整理go mod
 go mod tidy
 
+# 7. 编译部署相关
 #### 部署运行
 #### 0. go build -o go-test8888 cli.go
-#### 测试服
+#### 测试服范例
 #### 1. ./go-test -e test savePageDataCron
 #### linux下用 `supervisord` 进行监控相关任务
 
