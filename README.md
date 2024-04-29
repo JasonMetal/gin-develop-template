@@ -49,45 +49,24 @@ go mod tidy
 
 # 7. 编译部署相关
 #### 部署运行
-#### 0. go build -o go-test8888 cli.go
+#### 0. go build -o go-test cli.go
 #### 测试服范例
 #### 1. ./go-test -e test savePageDataCron
 #### linux下用 `supervisord` 进行监控相关任务
 
-```shell
-
-directory = /home/www/go-test
-command = /home/www/go-develop-template/go-test -e test savePageDataCron
-autostart = true
-autorestart = true
-loglevel = info
-stdout_logfile = /var/log/supervisor/goTestCrawl.log
-stderr_logfile = /var/log/supervisor/goTestCrawl_stderr.log
-stdout_logfile_maxbytes = 30MB
-stdout_logfile_backups = 3
-stdout_events_enabled = false
 
 ```shell
-#### 状态
+#### 查看状态
 supervisorctl status|grep goTestCrawl
 supervisorctl restart goTestCrawl
-#### conf /etc/supervisord.d/conf/goTestCrawl.conf
-[program:goTestCrawl]
-directory = /home/www/go-test
-command = /home/www/go-develop-template/go-test8888 -e prod savePageDataCron
-autostart = true
-autorestart = true
-loglevel = info
-stdout_logfile = /var/log/supervisor/goTestCrawl.log
-stderr_logfile = /var/log/supervisor/goTestCrawl_stderr.log
-stdout_logfile_maxbytes = 30MB
-stdout_logfile_backups = 3
-stdout_events_enabled = false
+#### conf文件路径
+ /etc/supervisord.d/conf/goTestCrawl.conf
 
+#### 某台服务
 [xxx@test go-websites]# cat /etc/supervisord.d/conf/goTestCrawl.conf
 [program:goTestCrawl]
-directory = /home/www/go-test
-command = /home/www/go-develop-template/go-test8888 -e prod savePageDataCron
+directory = /home/www/demo
+command = /home/www/demo/go-test -e test savePageDataCron
 autostart = true
 autorestart = true
 loglevel = info
@@ -96,3 +75,4 @@ stderr_logfile = /var/log/supervisor/goTestCrawl_stderr.log
 stdout_logfile_maxbytes = 30MB
 stdout_logfile_backups = 3
 stdout_events_enabled = false
+```
