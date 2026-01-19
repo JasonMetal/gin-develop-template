@@ -1,0 +1,46 @@
+=== RUN   TestKafkaConfig
+    kafka_test.go:81: ✓ Kafka配置加载测试通过
+--- PASS: TestKafkaConfig (0.00s)
+=== RUN   TestKafkaConfigLoadError
+    kafka_test.go:90: ✓ 配置文件不存在错误处理测试通过: open /nonexistent/path/kafka.yml: The system cannot find the path specified.
+--- PASS: TestKafkaConfigLoadError (0.00s)
+=== RUN   TestKafkaManagerInit
+    kafka_test.go:128: 跳过需要修改全局函数的测试
+--- SKIP: TestKafkaManagerInit (0.00s)
+=== RUN   TestProducerConfig
+    kafka_test.go:183: ✓ 生产者配置生成测试通过
+--- PASS: TestProducerConfig (0.00s)
+=== RUN   TestProducerSyncWithMock
+2026/01/19 23:11:52 消息发送成功! Topic: test-topic, Partition: 1, Offset: 1
+    kafka_test.go:227: ✓ 同步生产者Mock测试通过
+--- PASS: TestProducerSyncWithMock (0.00s)
+=== RUN   TestProducerSyncBatchWithMock
+2026/01/19 23:11:52 批量发送成功! Topic: test-topic, 消息数: 3
+    kafka_test.go:271: ✓ 批量发送Mock测试通过
+--- PASS: TestProducerSyncBatchWithMock (0.00s)
+=== RUN   TestProducerAsyncWithMock
+    kafka_test.go:315: ✓ 异步生产者Mock测试通过
+--- PASS: TestProducerAsyncWithMock (0.10s)
+=== RUN   TestProducerWithContext
+2026/01/19 23:11:52 消息发送成功! Topic: test-topic, Partition: 10, Offset: 1
+    kafka_test.go:353: ✓ 带上下文发送测试通过
+--- PASS: TestProducerWithContext (0.00s)
+=== RUN   TestProducerAsyncWithCancelledContext
+    kafka_test.go:391: ✓ 取消上下文测试通过: context canceled
+--- PASS: TestProducerAsyncWithCancelledContext (0.00s)
+=== RUN   TestProducerError
+    kafka_test.go:428: ✓ 生产者错误处理测试通过: 发送消息失败: 模拟发送失败
+--- PASS: TestProducerError (0.00s)
+=== RUN   TestKafkaNotInitialized
+    kafka_test.go:447: ✓ 未初始化错误处理测试通过
+--- PASS: TestKafkaNotInitialized (0.00s)
+=== RUN   TestCloseKafka
+2026/01/19 23:11:52 Kafka连接已关闭
+    kafka_test.go:469: ✓ 关闭Kafka测试通过
+--- PASS: TestCloseKafka (0.00s)
+=== RUN   TestCloseKafkaWhenNotInitialized
+    kafka_test.go:483: ✓ 未初始化关闭测试通过
+--- PASS: TestCloseKafkaWhenNotInitialized (0.00s)
+PASS
+coverage: 13.4% of statements
+ok  	support-go/bootstrap	0.124s	coverage: 13.4% of statements

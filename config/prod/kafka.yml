@@ -1,0 +1,18 @@
+brokers:
+  - host: "kafka-prod.example.com"
+    port: 9092
+
+ssl:
+  enable: true
+
+producer:
+  required_acks: -1
+  max_retries: 5
+  return_successes: true
+  return_errors: true
+
+consumer:
+  group_id: "gin-develop-template"
+  auto_commit: true
+
+version: "3.7.2"

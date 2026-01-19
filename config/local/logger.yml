@@ -1,5 +1,5 @@
 logger:
-  level: "debug"  # 正式环境配置成error
+  level: "info"  # 正式环境配置成error
   logType: "daily" # 文件名
   logPath: "/tmp/"
   filename: "run.log"  # 日志文件路径

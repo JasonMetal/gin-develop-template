@@ -1,0 +1,14 @@
+# develop-template/app/service/kafkaService [develop-template/app/service/kafkaService.test]
+app\service\kafkaService\kafkaService_test.go:16:2: declared and not used: kafkaConfig
+app\service\kafkaService\kafkaService_test.go:49:2: declared and not used: kafkaConfig
+app\service\kafkaService\kafkaService_test.go:65:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:96:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:138:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:174:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:216:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:240:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:264:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:288:2: declared and not used: service
+app\service\kafkaService\kafkaService_test.go:288:2: too many errors
+FAIL	develop-template/app/service/kafkaService [build failed]
+FAIL

@@ -1,0 +1,15 @@
+mode: set
+develop-template/app/service/kafkaService/kafkaService.go:16.38,18.2 1 1
+develop-template/app/service/kafkaService/kafkaService.go:21.72,23.2 1 1
+develop-template/app/service/kafkaService/kafkaService.go:26.77,28.2 1 1
+develop-template/app/service/kafkaService/kafkaService.go:31.104,33.2 1 0
+develop-template/app/service/kafkaService/kafkaService.go:36.71,38.16 2 1
+develop-template/app/service/kafkaService/kafkaService.go:38.16,40.3 1 0
+develop-template/app/service/kafkaService/kafkaService.go:41.2,41.47 1 1
+develop-template/app/service/kafkaService/kafkaService.go:45.76,47.16 2 1
+develop-template/app/service/kafkaService/kafkaService.go:47.16,49.3 1 0
+develop-template/app/service/kafkaService/kafkaService.go:50.2,50.52 1 1
+develop-template/app/service/kafkaService/kafkaService.go:54.73,56.2 1 1
+develop-template/app/service/kafkaService/kafkaService.go:59.118,67.2 2 1
+develop-template/app/service/kafkaService/kafkaService.go:70.95,77.2 2 1
+develop-template/app/service/kafkaService/kafkaService.go:80.119,88.2 2 1

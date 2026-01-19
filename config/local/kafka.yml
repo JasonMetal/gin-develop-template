@@ -1,0 +1,26 @@
+brokers:
+  - host: "localhost"
+    port: 9092
+
+# SSL/TLS配置
+ssl:
+  enable: false
+
+# 生产者配置
+producer:
+  # 确认模式: 0-不等待, 1-等待leader, -1-等待所有副本
+  required_acks: 1
+  # 最大重试次数
+  max_retries: 5
+  # 返回成功确认
+  return_successes: true
+  # 返回错误信息
+  return_errors: true
+
+# 消费者配置(预留)
+consumer:
+  group_id: "gin-develop-template"
+  auto_commit: true
+
+# Kafka版本
+version: "3.7.2"

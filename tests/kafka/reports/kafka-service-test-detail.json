@@ -1,0 +1,4 @@
+FAIL	develop-template/app/service/kafkaService [build failed]
+# develop-template/app/service/kafkaService [develop-template/app/service/kafkaService.test]
+app\service\kafkaService\kafkaService_test.go:10:2: "github.com/IBM/sarama/mocks" imported and not used
+FAIL

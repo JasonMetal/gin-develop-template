@@ -1,0 +1,2072 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>bootstrap: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">support-go/bootstrap/app.go (0.0%)</option>
+				
+				<option value="file1">support-go/bootstrap/config.go (0.0%)</option>
+				
+				<option value="file2">support-go/bootstrap/cos.go (0.0%)</option>
+				
+				<option value="file3">support-go/bootstrap/database.go (0.0%)</option>
+				
+				<option value="file4">support-go/bootstrap/email.go (0.0%)</option>
+				
+				<option value="file5">support-go/bootstrap/grpc.go (0.0%)</option>
+				
+				<option value="file6">support-go/bootstrap/grpcPool.go (0.0%)</option>
+				
+				<option value="file7">support-go/bootstrap/kafka.go (62.0%)</option>
+				
+				<option value="file8">support-go/bootstrap/logger.go (0.0%)</option>
+				
+				<option value="file9">support-go/bootstrap/redis.go (0.0%)</option>
+				
+				<option value="file10">support-go/bootstrap/sms.go (0.0%)</option>
+				
+				<option value="file11">support-go/bootstrap/sts.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package bootstrap
+
+import (
+        "bytes"
+        "context"
+        "flag"
+        "fmt"
+        "net/http"
+        "os"
+        "os/exec"
+        "os/signal"
+        "runtime"
+        "strings"
+        "syscall"
+        "time"
+
+        "github.com/JasonMetal/submodule-support-go.git/helper/logger"
+        "github.com/gin-gonic/gin"
+        "go.uber.org/zap"
+)
+
+const (
+        OnlineServiceHostPort = ":50051"
+        HttpTimeoutHandler    = 10 * time.Second //TimeoutHandler默认的http超时时间，http响应时间超过后直接返回client端503(不同项目可根据接口最大超时时间调整)
+        EnvLocal              = "local"
+        EnvTest               = "test"
+        EnvBVT                = "bvt"
+        EnvProduct            = "product"
+        EnvBenchmark          = "benchmark"
+)
+
+type coreCtx struct {
+        //ConsoleLogger *zap.Logger
+        Logger    *zap.Logger
+        UDPLogger *zap.Logger
+        //TracingLogKafkaCollect collect.Collector
+        //NoCallerLogger *zap.Logger
+}
+
+var (
+        CoreCtx     coreCtx
+        err         error
+        DevEnv      string
+        TestConfig  string
+        ProjectName string
+)
+
+//var grpcConnPool map[string]http2.Pool
+
+func Init() <span class="cov0" title="0">{
+        initEnv()
+
+        InitLogger()
+
+        InitMysql()
+
+        InitRedis()
+
+        InitGrpc()
+
+        // InitSts()
+
+        // InitSms()
+
+        // 初始化Kafka
+        if err := InitKafka(DevEnv); err != nil </span><span class="cov0" title="0">{
+                logger.Warn("Kafka初始化失败(非致命错误)", zap.Error(err))
+        }</span>
+}
+
+func SetProjectName(name string) <span class="cov0" title="0">{
+        ProjectName = name
+}</span>
+
+func GetProjectName() string <span class="cov0" title="0">{
+        return ProjectName
+}</span>
+
+func initEnv() <span class="cov0" title="0">{
+        // 优先获取系统环境变量
+        runEnv := os.Getenv("RUN_ENV")
+        if runEnv != "" </span><span class="cov0" title="0">{
+                DevEnv = runEnv
+        }</span> else<span class="cov0" title="0"> {
+                flag.Usage = Usage
+                flag.StringVar(&amp;DevEnv, "e", EnvLocal, "Specify env")
+                flag.Parse()
+        }</span>
+}
+
+func InitWeb(funs []gin.HandlerFunc) *gin.Engine <span class="cov0" title="0">{
+        gin.SetMode(gin.DebugMode)
+        r := gin.New()
+        r.Use(SetLogger())
+        r.Use(LogRecovery())
+        r.Use(gin.Recovery())
+        r.Use(ControlCors())
+
+        for _, v := range funs </span><span class="cov0" title="0">{
+                r.Use(v)
+        }</span>
+
+        <span class="cov0" title="0">if DevEnv == EnvLocal || DevEnv == EnvBenchmark </span><span class="cov0" title="0">{
+                c := make(chan os.Signal, 1)
+                signal.Notify(c, os.Interrupt)
+                signal.Notify(c, syscall.SIGKILL)
+                go func() </span><span class="cov0" title="0">{
+                        &lt;-c
+                        os.Exit(0)
+                }</span>()
+        } else<span class="cov0" title="0"> {
+                logger.RedirectLog()
+        }</span>
+
+        <span class="cov0" title="0">return r</span>
+}
+
+func Usage() <span class="cov0" title="0">{
+        fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-e=local]")
+        flag.PrintDefaults()
+        os.Exit(0)
+}</span>
+
+func RunWeb(r *gin.Engine, addr string) <span class="cov0" title="0">{
+        if DevEnv == EnvLocal || DevEnv == EnvBenchmark </span><span class="cov0" title="0">{
+                fmt.Println("local http start on " + addr)
+                //router.Run(addr)
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Printf("env:%s; http server listen on %s\n", DevEnv, OnlineServiceHostPort)
+                addr = OnlineServiceHostPort
+                //router.Run(core.ONLINE_SERVICE_HOST_PORT)
+        }</span>
+        <span class="cov0" title="0">s := &amp;http.Server{
+                Addr: addr,
+                Handler: http.TimeoutHandler(
+                        r,
+                        HttpTimeoutHandler,
+                        "server has gone away",
+                ),
+                ReadTimeout:  HttpTimeoutHandler,
+                WriteTimeout: HttpTimeoutHandler,
+                IdleTimeout:  1 * time.Minute,
+                //MaxHeaderBytes: 1 &lt;&lt; 20,
+        }
+
+        go s.ListenAndServe()
+
+        gracefulShutdown(s)</span>
+}
+
+// gracefulShutdown 优雅退出
+func gracefulShutdown(server *http.Server) <span class="cov0" title="0">{
+        ch := make(chan os.Signal)
+        signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, os.Interrupt)
+        &lt;-ch
+        //core.DebugLog("http shutdown")
+
+        // 关闭Kafka连接
+        if err := CloseKafka(); err != nil </span><span class="cov0" title="0">{
+                logger.Error("关闭Kafka连接失败", zap.Error(err))
+        }</span>
+
+        <span class="cov0" title="0">cxt, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+        defer cancel()
+        server.Shutdown(cxt)
+        os.Exit(0)</span>
+
+}
+
+// ControlCors 设置CORS
+func ControlCors() gin.HandlerFunc <span class="cov0" title="0">{
+        return func(context *gin.Context) </span><span class="cov0" title="0">{
+                method := context.Request.Method
+                origin := context.Request.Header.Get("Origin")
+
+                if strings.Contains(origin, "sitename.cloud") || strings.Contains(origin, "localhost") </span><span class="cov0" title="0">{
+                        context.Header("Access-Control-Allow-Origin", origin)
+                        context.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+                        context.Header("Access-Control-Allow-Headers", "*")
+                        context.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Cache-Control, Content-Language, Content-Type, admintoken")
+                        context.Header("Access-Control-Allow-Credentials", "true")
+
+                        if method == "OPTIONS" </span><span class="cov0" title="0">{
+                                context.AbortWithStatus(http.StatusNoContent)
+                                return
+                        }</span>
+                }
+                <span class="cov0" title="0">context.Next()</span>
+        }
+}
+
+func CheckError(err error, errType string) error <span class="cov0" title="0">{
+        if err != nil </span><span class="cov0" title="0">{
+
+                logger.Error(err.Error(), zap.String("type", errType))
+
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+func ProjectPath() (path string) <span class="cov0" title="0">{
+        // default linux/mac os
+        var (
+                sp = "/"
+                ss []string
+        )
+        if runtime.GOOS == "windows" </span><span class="cov0" title="0">{
+                sp = "\\"
+        }</span>
+
+        // GOMOD
+        // in go source code:
+        // // Check for use of modules by 'go env GOMOD',
+        // // which reports a go.mod file path if modules are enabled.
+        // stdout, _ := exec.Command("go", "env", "GOMOD").Output()
+        // gomod := string(bytes.TrimSpace(stdout))
+        <span class="cov0" title="0">stdout, _ := exec.Command("go", "env", "GOMOD").Output()
+        path = string(bytes.TrimSpace(stdout))
+        if path == "/dev/null" </span><span class="cov0" title="0">{
+                return ""
+        }</span>
+        <span class="cov0" title="0">if path != "" </span><span class="cov0" title="0">{
+                ss = strings.Split(path, sp)
+                ss = ss[:len(ss)-1]
+                path = strings.Join(ss, sp) + sp
+                return
+        }</span>
+
+        // GOPATH
+        <span class="cov0" title="0">fileDir, _ := os.Getwd()
+        path = os.Getenv("GOPATH") // &lt; go 1.17 use
+        ss = strings.Split(fileDir, path)
+        if path != "" </span><span class="cov0" title="0">{
+                ss2 := strings.Split(ss[1], sp)
+                path += sp
+                for i := 1; i &lt; len(ss2); i++ </span><span class="cov0" title="0">{
+                        path += ss2[i] + sp
+                        return path
+                }</span>
+        }
+        <span class="cov0" title="0">return</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">// Package config 负责配置信息
+package bootstrap
+
+import (
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+)
+
+type Config struct {
+}
+
+func getDbNames(filename string) []string <span class="cov0" title="0">{
+        DbNames := make([]string, 0)
+        path := fmt.Sprintf("%sconfig/%s/%s.yml", ProjectPath(), DevEnv, filename)
+
+        DBConfigs, err := config.GetConfig(path)
+        configList, err := DBConfigs.Map(filename)
+        if err == nil </span><span class="cov0" title="0">{
+                for DBName, _ := range configList </span><span class="cov0" title="0">{
+                        DbNames = append(DbNames, DBName)
+                }</span>
+        }
+
+        <span class="cov0" title="0">return DbNames</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package bootstrap
+
+import (
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+        "github.com/tencentyun/cos-go-sdk-v5"
+        "net/http"
+)
+
+type CosClient struct {
+        AppId           string
+        Client          *http.Client
+        Region          string
+        BucketName      string
+        DurationSeconds int
+        Bucket          string
+        Domain          string
+}
+
+var CosClientList = make(map[string]CosClient)
+
+func InitCos() <span class="cov0" title="0">{
+        path := fmt.Sprintf("%sconfig/%s/tencentyun.yml", ProjectPath(), DevEnv)
+
+        cosConfigs, err := config.GetConfig(path)
+
+        configList, err := cosConfigs.Map("tencentyun")
+        if err == nil </span><span class="cov0" title="0">{
+                for project, _ := range configList </span><span class="cov0" title="0">{
+                        secretId, _ := cosConfigs.String("tencentyun." + project + ".secretId")
+                        secretKey, _ := cosConfigs.String("tencentyun." + project + ".secretKey")
+                        appId, _ := cosConfigs.String("tencentyun." + project + ".appId")
+                        region, _ := cosConfigs.String("tencentyun." + project + ".Region")
+                        durationSeconds, _ := cosConfigs.Int("tencentyun." + project + ".durationSeconds")
+                        bucketName, _ := cosConfigs.String("tencentyun." + project + ".bucket")
+                        domain, _ := cosConfigs.String("tencentyun." + project + ".domain")
+
+                        c := &amp;http.Client{
+                                Transport: setTransport(secretId, secretKey),
+                        }
+                        CosClientList[project] = CosClient{
+                                AppId:           appId,
+                                Client:          c,
+                                Region:          region,
+                                DurationSeconds: durationSeconds,
+                                BucketName:      fmt.Sprintf("%s-%s", bucketName, appId),
+                                Bucket:          bucketName,
+                                Domain:          domain,
+                        }
+                }</span>
+        }
+}
+
+func setTransport(secretID, secretKey string) *cos.AuthorizationTransport <span class="cov0" title="0">{
+        return &amp;cos.AuthorizationTransport{
+                SecretID:  secretID,
+                SecretKey: secretKey,
+                // Debug 模式，把对应 请求头部、请求内容、响应头部、响应内容 输出到标准输出
+                //Transport: &amp;debug.DebugRequestTransport{
+                //        RequestHeader:  true,
+                //        RequestBody:    true,
+                //        ResponseHeader: true,
+                //        ResponseBody:   true,
+                //},
+        }
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package bootstrap
+
+import (
+        "errors"
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+        yCfg "github.com/olebedev/config"
+        "gorm.io/driver/mysql"
+        "gorm.io/gorm"
+        "gorm.io/gorm/logger"
+        "gorm.io/gorm/schema"
+        "log"
+        "os"
+        "time"
+)
+
+type MysqlInstance struct {
+        DSN string
+        DB  *gorm.DB
+}
+
+var mysqlDbList = make(map[string]MysqlInstance)
+
+func InitMysql() <span class="cov0" title="0">{
+        dbList := getDbNames("mysql")
+
+        for _, dbname := range dbList </span><span class="cov0" title="0">{
+                instance, err := initDbConn(dbname)
+                if err == nil </span><span class="cov0" title="0">{
+                        mysqlDbList[dbname] = instance
+                }</span>
+        }
+}
+
+func mysqlLogger() logger.Interface <span class="cov0" title="0">{
+        newLogger := logger.New(
+                log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
+                logger.Config{
+                        SlowThreshold:             time.Second,   // 慢 SQL 阈值
+                        LogLevel:                  logger.Silent, // 日志级别
+                        IgnoreRecordNotFoundError: true,          // 忽略ErrRecordNotFound（记录未找到）错误
+                        Colorful:                  false,         // 禁用彩色打印
+                },
+        )
+
+        return newLogger
+}</span>
+
+func initDbConn(dbName string) (MysqlInstance, error) <span class="cov0" title="0">{
+        path := fmt.Sprintf("%sconfig/%s/mysql.yml", ProjectPath(), DevEnv)
+
+        cfg, err := config.GetConfig(path)
+
+        maxOpenConns, _ := cfg.Int("mysql." + dbName + ".maxOpenConns")
+        maxIdleConns, _ := cfg.Int("mysql." + dbName + ".maxIdleConns")
+        maxLifetime, _ := cfg.Int("mysql." + dbName + ".maxLifetime")
+        tablePrefix, _ := cfg.String("mysql." + dbName + ".tablePrefix")
+        debug, _ := cfg.Bool("mysql." + dbName + ".debug")
+        charset, _ := cfg.String("mysql." + dbName + ".charset")
+
+        servers, err := cfg.List("mysql." + dbName + ".servers")
+        if err != nil || len(servers) &lt; 1 </span><span class="cov0" title="0">{
+                return MysqlInstance{}, err
+        }</span>
+
+        <span class="cov0" title="0">host, _ := yCfg.Get(servers[0], "host")
+        port, _ := yCfg.Get(servers[0], "port")
+        name, _ := yCfg.Get(servers[0], "db")
+        user, _ := yCfg.Get(servers[0], "user")
+        passwd, _ := yCfg.Get(servers[0], "passwd")
+
+        addr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&amp;parseTime=True&amp;loc=Local",
+                //addr := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=%s&amp;parseTime=True",
+                user.(string), passwd.(string), host.(string), port.(int), name.(string), charset)
+
+        if connTimeout, err := yCfg.Get(servers[0], "connTimeout"); err == nil </span><span class="cov0" title="0">{
+                addr += fmt.Sprintf("&amp;timeout=%dms", connTimeout.(int))
+        }</span>
+        <span class="cov0" title="0">if readTimeout, err := yCfg.Get(servers[0], "readTimeout"); err == nil </span><span class="cov0" title="0">{
+                addr += fmt.Sprintf("&amp;readTimeout=%dms", readTimeout.(int))
+        }</span>
+        <span class="cov0" title="0">if writeTimeout, err := yCfg.Get(servers[0], "writeTimeout"); err == nil </span><span class="cov0" title="0">{
+                addr += fmt.Sprintf("&amp;writeTimeout=%dms", writeTimeout.(int))
+        }</span>
+        <span class="cov0" title="0">gormConfig := &amp;gorm.Config{
+                Logger: mysqlLogger(),
+        }
+
+        if tablePrefix != "" </span><span class="cov0" title="0">{
+                gormConfig.NamingStrategy = schema.NamingStrategy{
+                        TablePrefix: tablePrefix,
+                }
+        }</span>
+
+        <span class="cov0" title="0">db, err := gorm.Open(mysql.Open(addr), &amp;gorm.Config{
+                Logger: mysqlLogger(),
+                NamingStrategy: schema.NamingStrategy{
+                        TablePrefix:   tablePrefix,
+                        SingularTable: true,
+                },
+        })
+
+        if err != nil </span><span class="cov0" title="0">{
+                //return MysqlInstance{}, errors.New("connection is not exist")
+                return MysqlInstance{}, err
+        }</span>
+
+        <span class="cov0" title="0">if debug </span><span class="cov0" title="0">{
+                db = db.Debug()
+        }</span>
+
+        <span class="cov0" title="0">DB, err := db.DB()
+
+        err = DB.Ping()
+        if err != nil </span><span class="cov0" title="0">{
+                return MysqlInstance{}, err
+        }</span>
+
+        <span class="cov0" title="0">if maxLifetime &gt; 0 </span><span class="cov0" title="0">{
+                DB.SetConnMaxLifetime(time.Duration(maxLifetime) * time.Second)
+        }</span>
+
+        <span class="cov0" title="0">DB.SetMaxIdleConns(maxIdleConns)
+        DB.SetMaxOpenConns(maxOpenConns)
+
+        return MysqlInstance{fmt.Sprintf("%s:%d/%s", host.(string), port.(int), name.(string)), db}, nil</span>
+}
+
+func GetMysqlInstance(dbName string) (MysqlInstance, error) <span class="cov0" title="0">{
+        if instance, ok := mysqlDbList[dbName]; ok </span><span class="cov0" title="0">{
+                return instance, nil
+        }</span> else<span class="cov0" title="0"> {
+                return instance, errors.New(dbName + " db is null")
+        }</span>
+
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package bootstrap
+
+import (
+        "fmt"
+        configHelper "github.com/JasonMetal/submodule-support-go.git/helper/config"
+)
+
+type emailConfig struct {
+        Host     string
+        Port     int
+        Username string
+        Password string
+}
+
+var EmailConfig = &amp;emailConfig{}
+
+func InitEmail() <span class="cov0" title="0">{
+        initDefaultConfigForEmail()
+}</span>
+
+// 初始化默认配置
+func initDefaultConfigForEmail() <span class="cov0" title="0">{
+        configName := "default"
+        path := fmt.Sprintf("%sconfig/%s/email.yml", ProjectPath(), DevEnv)
+        emailConfigs, err := configHelper.GetConfig(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+        <span class="cov0" title="0">EmailConfig.Host, _ = emailConfigs.String(configName + ".host")
+        EmailConfig.Port, _ = emailConfigs.Int(configName + ".port")
+        EmailConfig.Username, _ = emailConfigs.String(configName + ".username")
+        EmailConfig.Password, _ = emailConfigs.String(configName + ".password")</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package bootstrap
+
+import (
+        "context"
+        "errors"
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/logger"
+        grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+        grpcRecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+        grpcOpentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+        "github.com/hashicorp/consul/api"
+        uuid "github.com/satori/go.uuid"
+        "go.uber.org/zap"
+        "google.golang.org/grpc"
+        _ "google.golang.org/grpc/encoding/gzip"
+        "google.golang.org/grpc/keepalive"
+        "google.golang.org/grpc/reflection"
+        "net"
+        "os"
+        "os/signal"
+        "strconv"
+        "strings"
+        "syscall"
+        "time"
+)
+
+var consulAddress = "test.site.com"
+var consulClient *api.Client
+var serviceId string
+
+func NewGrpcServer() *grpc.Server <span class="cov0" title="0">{
+        // TODO 定义grpc监控指标
+        // grpc_prometheus.GrpcServerMonitorMetricsRegist()
+        // grpc_prometheus.GetGrpcServerMetrics().EnableHandlingTimeSummary()
+
+        s := grpc.NewServer(
+                grpc.MaxConcurrentStreams(100),
+                grpc.KeepaliveEnforcementPolicy(keepalive.EnforcementPolicy{
+                        PermitWithoutStream: true,
+                }),
+
+                grpc.KeepaliveParams(
+                        keepalive.ServerParameters{
+                                MaxConnectionIdle: time.Duration(30) * time.Second,
+                                Time:              time.Duration(15) * time.Second,
+                                Timeout:           time.Duration(3) * time.Second,
+                        },
+                ),
+                grpc.UnaryInterceptor(
+                        grpcMiddleware.ChainUnaryServer(
+                                //grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
+                                grpcRecovery.UnaryServerInterceptor(),
+                                grpcOpentracing.UnaryServerInterceptor(),
+                                //grpc_prometheus.GetGrpcServerMetrics().UnaryServerInterceptor(),
+                        ),
+                ),
+        )
+
+        return s
+}</span>
+
+func GetGrpcConn(ctx context.Context, name string) (*IdleConn, context.Context) <span class="cov0" title="0">{
+        newCtx := setTraceCtx(ctx)
+        conn, err := grpcConnPool[name].Get()
+        if err == nil </span><span class="cov0" title="0">{
+                defer grpcConnPool[name].Put(conn)
+        }</span>
+
+        <span class="cov0" title="0">return conn, newCtx</span>
+}
+
+func PutGrpcConn(name string, conn *IdleConn) <span class="cov0" title="0">{
+        grpcConnPool[name].RetrieveConcurrentStream(conn)
+}</span>
+
+// setTraceCtx 设置trace_id, span_id等信息
+func setTraceCtx(ctx context.Context) context.Context <span class="cov0" title="0">{
+        var ctxMD = ctx
+        //
+        //requestId := ctx.Value("x-request-id")
+        //
+        //traceId := ctx.Value("X-B3-TraceId")
+        //spanId := ctx.Value("X-B3-SpanId")
+        ////parentSpanId := ctx.GetHeader("x-b3-parentspanid")
+        //sampled := ctx.Value("X-B3-Sampled")
+        //
+        //if sampled == "1" &amp;&amp; traceId != "" {
+        //        number.GenerateTraceId()
+        //        md := metadata.Pairs("X-B3-Sampled", sampled.(string),
+        //                "x-request-id", requestId.(string),
+        //                "X-B3-TraceId", traceId.(string),
+        //                "X-B3-SpanId", number.GenerateSpanId(8),
+        //                "X-B3-ParentSpanId", spanId.(string),
+        //                "x-b3-sampled", sampled.(string),
+        //                "x-b3-flags", ctx.Value("x-b3-flags").(string),
+        //                "x-ot-span-context", ctx.Value("x-ot-span-context").(string),
+        //                //"X-B3-ProjectId", ctx.GetHeader("X-B3-ProjectId"),
+        //        )
+        //        ctxMD = metadata.NewOutgoingContext(context.Background(), md)
+        //} else {
+        //        ctxMD = context.Background()
+        //}
+
+        return ctxMD
+}</span>
+
+func panicLog(err error) <span class="cov0" title="0">{
+        CoreCtx.Logger.Error(err.Error(), zap.String("type", "grpc"))
+}</span>
+
+func RunServer(s *grpc.Server, addr string) <span class="cov0" title="0">{
+        // register reflection
+        registerGrpcReflection(s)
+
+        l, err := net.Listen("tcp", addr)
+        if err != nil </span><span class="cov0" title="0">{
+                logger.Error("grpc", zap.NamedError("grpc", errors.New("grpc error"+err.Error())))
+        }</span>
+
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                os.Exit(1)
+        }</span>
+        <span class="cov0" title="0">fmt.Println("local grpc start on " + addr)
+
+        go s.Serve(l)
+        port := 0
+        address := os.Getenv("HOST_IP")
+        hostPort := os.Getenv("HOST_PORT")
+        if hostPort != "" </span><span class="cov0" title="0">{
+                port, _ = strconv.Atoi(hostPort)
+        }</span>
+        // 将当前grpc服务注册到consul
+        <span class="cov0" title="0">err = RegisterGRPCServiceConsul(address, port, []string{GetProjectName()})
+        if err != nil </span><span class="cov0" title="0">{
+                logger.Error("grpc", zap.NamedError("grpc", errors.New("grpc register error "+err.Error())))
+        }</span>
+        <span class="cov0" title="0">gracefulGrpcShutdown(s)</span>
+}
+
+func getLocalIp() string <span class="cov0" title="0">{
+        conn, err := net.Dial("udp", "183.60.83.19:53")
+        if err != nil </span><span class="cov0" title="0">{
+                fmt.Println(err)
+                return ""
+        }</span>
+        <span class="cov0" title="0">localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+        return strings.Split(localAddr.String(), ":")[0]</span>
+
+}
+
+// registerGrpcReflection 用户本地调试
+func registerGrpcReflection(s *grpc.Server) <span class="cov0" title="0">{
+        if DevEnv == EnvLocal </span><span class="cov0" title="0">{
+                reflection.Register(s)
+        }</span>
+}
+
+func gracefulGrpcShutdown(s *grpc.Server) <span class="cov0" title="0">{
+        ch := make(chan os.Signal)
+        signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, os.Interrupt)
+        getSignal := &lt;-ch
+        if getSignal == syscall.SIGTERM || getSignal == syscall.SIGQUIT || getSignal == syscall.SIGINT </span><span class="cov0" title="0">{
+
+                logger.Debug("grpc", zap.NamedError("shutdown", errors.New("grpc server shutdown, handle signal "+fmt.Sprint(getSignal))))
+                time.Sleep(3 * time.Second)
+        }</span>
+        <span class="cov0" title="0">s.GracefulStop()
+        s.Stop()
+        if consulClient != nil </span><span class="cov0" title="0">{
+                consulClient.Agent().ServiceDeregister(serviceId)
+        }</span>
+
+        <span class="cov0" title="0">os.Exit(0)</span>
+}
+
+// RegisterGRPCServiceConsul 注册服务到consul
+func RegisterGRPCServiceConsul(address string, port int, tags []string) error <span class="cov0" title="0">{
+        serviceId = uuid.NewV4().String()
+        cfg := api.DefaultConfig()
+        cfg.Address = fmt.Sprintf("%s:%d", consulAddress, 8500)
+        consulClient, err = api.NewClient(cfg)
+        if err != nil </span><span class="cov0" title="0">{
+                logger.Error("grpc", zap.NamedError("grpc", errors.New("grpc register to consul error "+err.Error())))
+        }</span>
+
+        // 生成健康检查对象
+        <span class="cov0" title="0">check := &amp;api.AgentServiceCheck{
+                GRPC: fmt.Sprintf("%s:%d", address, port), // 服务的运行地址,ip不可以是127.0.0.1
+
+                Timeout:                        "3s",  // 超过此时间说明服务状态不健康
+                Interval:                       "5s",  // 每5s检查一次
+                DeregisterCriticalServiceAfter: "30s", // 失败多久后注销服务
+        }
+        // 生成注册对象
+        serverName := fmt.Sprintf("%s-%s", DevEnv, GetProjectName())
+        registration := &amp;api.AgentServiceRegistration{
+                Name:    serverName,
+                ID:      serviceId,
+                Address: address,
+                Port:    port,
+                Tags:    tags,
+                Check:   check,
+        }
+
+        // 注册服务
+        err = consulClient.Agent().ServiceRegister(registration)
+
+        return err</span>
+
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package bootstrap
+
+import (
+        "context"
+        "errors"
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+        "github.com/grpc-ecosystem/go-grpc-middleware"
+        grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
+        yCfg "github.com/olebedev/config"
+        "google.golang.org/grpc"
+        "google.golang.org/grpc/codes"
+        "google.golang.org/grpc/connectivity"
+        "google.golang.org/grpc/credentials/insecure"
+        "google.golang.org/grpc/keepalive"
+        "google.golang.org/grpc/status"
+        "log"
+        "sync"
+        "sync/atomic"
+        "time"
+)
+
+var (
+        ErrClosed            = errors.New("pool had closed")
+        ErrLimit             = errors.New("pool is reached max")
+        MaxConcurrentStreams = 100
+        MaxGetConnTimes      = 200
+)
+
+// Pool 定义pool接口
+type Pool interface {
+        Get() (*IdleConn, error)
+
+        Put(*IdleConn) error
+
+        RetrieveConcurrentStream(*IdleConn)
+
+        RetrieveStream(*IdleConn)
+
+        Close(*grpc.ClientConn) error
+
+        Release()
+
+        Len() int
+}
+
+type PoolConfig struct {
+        InitialCap  int
+        MaxCap      int
+        Factory     func(string, time.Duration) (*grpc.ClientConn, error)
+        Close       func(*grpc.ClientConn) error
+        IdleTimeout time.Duration
+        Endpoint    string
+        Timeout     time.Duration
+}
+
+type ChannelPool struct {
+        mu          sync.Mutex
+        conns       chan *IdleConn
+        factory     func(string, time.Duration) (*grpc.ClientConn, error)
+        close       func(*grpc.ClientConn) error
+        idleTimeout time.Duration
+        initialCap  int
+        maxCap      int
+        endpoint    string
+        timeout     time.Duration
+}
+
+type IdleConn struct {
+        Conn          *grpc.ClientConn
+        t             time.Time
+        currentStream int32
+}
+
+type GrpcEndpoint struct {
+        Endpoint    string
+        InitialCap  int
+        MaxCap      int
+        IdleTimeout int
+}
+
+var grpcConnPool map[string]Pool
+
+// InitGrpc 初始化连接池
+func InitGrpc() <span class="cov0" title="0">{
+        var endpoints = make(map[string]GrpcEndpoint)
+
+        path := fmt.Sprintf("%sconfig/%s/grpc.yml", ProjectPath(), DevEnv)
+        cfg, err := config.GetConfig(path)
+        if err != nil </span><span class="cov0" title="0">{
+                panic("init grpc err")</span>
+        }
+        <span class="cov0" title="0">servers, err := cfg.List("server")
+        for _, v := range servers </span><span class="cov0" title="0">{
+                name, _ := yCfg.Get(v, "name")
+                endpoint, _ := yCfg.Get(v, "endpoint")
+                initialCap, _ := yCfg.Get(v, "initialCap")
+                maxCap, _ := yCfg.Get(v, "maxCap")
+                idleTimeout, _ := yCfg.Get(v, "idleTimeout")
+
+                endpoints[(name.(string))] = GrpcEndpoint{
+                        endpoint.(string),
+                        initialCap.(int),
+                        maxCap.(int),
+                        idleTimeout.(int),
+                }
+        }</span>
+
+        <span class="cov0" title="0">grpcConnPool = NewPool(endpoints)
+
+        endpoints = nil</span>
+}
+
+// NewChannelPool 初始化连接池
+func NewChannelPool(poolConfig *PoolConfig) (Pool, error) <span class="cov0" title="0">{
+        if poolConfig.InitialCap &lt; 0 || poolConfig.MaxCap &lt;= 0 || poolConfig.InitialCap &gt; poolConfig.MaxCap </span><span class="cov0" title="0">{
+                return nil, errors.New("invalid capacity settings")
+        }</span>
+
+        <span class="cov0" title="0">c := &amp;ChannelPool{
+                conns:       make(chan *IdleConn, poolConfig.MaxCap),
+                factory:     poolConfig.Factory,
+                close:       poolConfig.Close,
+                idleTimeout: poolConfig.IdleTimeout,
+                initialCap:  poolConfig.InitialCap,
+                maxCap:      poolConfig.MaxCap,
+                endpoint:    poolConfig.Endpoint,
+                timeout:     poolConfig.Timeout,
+        }
+
+        for i := 0; i &lt; poolConfig.InitialCap; i++ </span><span class="cov0" title="0">{
+                conn, err := c.factory(poolConfig.Endpoint, poolConfig.Timeout)
+                if err != nil </span><span class="cov0" title="0">{
+                        c.Release()
+                        return nil, fmt.Errorf("factory is not able to fill the pool: %s", err)
+                }</span>
+                <span class="cov0" title="0">c.conns &lt;- &amp;IdleConn{Conn: conn, t: time.Now()}</span>
+        }
+
+        <span class="cov0" title="0">return c, nil</span>
+}
+
+// getConns 获取连接池
+func (c *ChannelPool) getConns() chan *IdleConn <span class="cov0" title="0">{
+        c.mu.Lock()
+        conns := c.conns
+        c.mu.Unlock()
+
+        return conns
+}</span>
+
+// Get 从连接池获取连接
+func (c *ChannelPool) Get() (*IdleConn, error) <span class="cov0" title="0">{
+        conns := c.getConns()
+        if conns == nil </span><span class="cov0" title="0">{
+                return nil, ErrClosed
+        }</span>
+
+        <span class="cov0" title="0">size := len(conns)
+        times := 0
+        i := 0
+        //var current int32 = 0
+
+        for </span><span class="cov0" title="0">{
+                select </span>{
+                case wrapConn := &lt;-conns:<span class="cov0" title="0">
+                        times++
+                        if wrapConn == nil </span><span class="cov0" title="0">{
+                                return nil, ErrClosed
+                        }</span>
+
+                        <span class="cov0" title="0">if size &gt; c.initialCap </span><span class="cov0" title="0">{
+                                if timeout := c.idleTimeout; timeout &gt; 0 </span><span class="cov0" title="0">{
+                                        if wrapConn.t.Add(timeout).Before(time.Now()) </span><span class="cov0" title="0">{
+                                                i++
+                                                c.Close(wrapConn.Conn)
+                                                continue</span>
+                                        }
+                                }
+                        }
+
+                        <span class="cov0" title="0">grpcState := wrapConn.Conn.GetState()
+                        if grpcState == connectivity.TransientFailure || grpcState == connectivity.Shutdown </span><span class="cov0" title="0">{
+                                i++
+                                log.Printf("grpc recycle state:%d, current size:%d, info:%s", grpcState, len(c.conns), grpcState.String())
+                                c.Close(wrapConn.Conn)
+                                continue</span>
+                        }
+
+                        <span class="cov0" title="0">if atomic.LoadInt32(&amp;wrapConn.currentStream) &lt; int32(MaxConcurrentStreams) </span><span class="cov0" title="0">{
+                                atomic.AddInt32(&amp;wrapConn.currentStream, 1)
+
+                                return wrapConn, nil
+                        }</span> else<span class="cov0" title="0"> {
+                                c.conns &lt;- wrapConn
+                                i++
+
+                                if i &gt; size &amp;&amp; c.maxCap &gt; c.Len() </span><span class="cov0" title="0">{
+                                        conn, err := c.factory(c.endpoint, c.timeout)
+                                        if err != nil </span><span class="cov0" title="0">{
+                                                return nil, err
+                                        }</span>
+                                        <span class="cov0" title="0">idleConn := &amp;IdleConn{Conn: conn, t: time.Now(), currentStream: 1}
+
+                                        return idleConn, nil</span>
+                                } else<span class="cov0" title="0"> if times &gt; MaxGetConnTimes </span><span class="cov0" title="0">{
+                                        return nil, ErrLimit
+                                }</span>
+                        }
+
+                default:<span class="cov0" title="0">
+                        if c.maxCap &gt; c.Len() </span><span class="cov0" title="0">{
+                                conn, err := c.factory(c.endpoint, c.timeout)
+                                if err != nil </span><span class="cov0" title="0">{
+                                        return nil, err
+                                }</span>
+                                <span class="cov0" title="0">idleConn := &amp;IdleConn{Conn: conn, t: time.Now(), currentStream: 1}
+
+                                return idleConn, nil</span>
+                        }
+                        <span class="cov0" title="0">return nil, ErrLimit</span>
+                }
+        }
+}
+
+// Put 连接放回连接池
+func (c *ChannelPool) Put(ic *IdleConn) error <span class="cov0" title="0">{
+        if ic.Conn == nil </span><span class="cov0" title="0">{
+                return errors.New("connection is nil. rejecting")
+        }</span>
+
+        <span class="cov0" title="0">grpcState := ic.Conn.GetState()
+        if grpcState == connectivity.TransientFailure || grpcState == connectivity.Shutdown </span><span class="cov0" title="0">{
+                c.Close(ic.Conn)
+                log.Printf("grpc recycle state:%d, current size:%d", ic.Conn.GetState(), len(c.conns))
+
+                return nil
+        }</span>
+
+        <span class="cov0" title="0">c.mu.Lock()
+        defer c.mu.Unlock()
+
+        if c.conns == nil </span><span class="cov0" title="0">{
+                return c.Close(ic.Conn)
+        }</span>
+
+        <span class="cov0" title="0">ic.t = time.Now()
+
+        select </span>{
+        case c.conns &lt;- ic:<span class="cov0" title="0">
+                return nil</span>
+        default:<span class="cov0" title="0">
+                return c.Close(ic.Conn)</span>
+        }
+}
+
+// RetrieveConcurrentStream 回收steam
+func (c *ChannelPool) RetrieveConcurrentStream(ic *IdleConn) <span class="cov0" title="0">{
+        atomic.AddInt32(&amp;ic.currentStream, -1)
+}</span>
+
+// RetrieveStream 回收steam
+func (c *ChannelPool) RetrieveStream(ic *IdleConn) <span class="cov0" title="0">{
+        atomic.AddInt32(&amp;ic.currentStream, -1)
+        c.Put(ic)
+}</span>
+
+// Close 关闭链接
+func (c *ChannelPool) Close(conn *grpc.ClientConn) error <span class="cov0" title="0">{
+        if conn == nil </span><span class="cov0" title="0">{
+                return errors.New("connection is nil. rejecting")
+        }</span>
+        <span class="cov0" title="0">return c.close(conn)</span>
+}
+
+// Release 释放所有的链接
+func (c *ChannelPool) Release() <span class="cov0" title="0">{
+        c.mu.Lock()
+        conns := c.conns
+        c.conns = nil
+        c.factory = nil
+        closeFun := c.close
+        c.close = nil
+        c.mu.Unlock()
+
+        if conns == nil </span><span class="cov0" title="0">{
+                return
+        }</span>
+
+        <span class="cov0" title="0">close(conns)
+        for wrapConn := range conns </span><span class="cov0" title="0">{
+                closeFun(wrapConn.Conn)
+        }</span>
+}
+
+// Len 连接池中已有的连接
+func (c *ChannelPool) Len() int <span class="cov0" title="0">{
+        return len(c.getConns())
+}</span>
+
+func NewPool(endpoints map[string]GrpcEndpoint) map[string]Pool <span class="cov0" title="0">{
+        var connPool = make(map[string]Pool)
+        var timeout time.Duration = time.Duration(4000) * time.Millisecond
+        for name, endpoint := range endpoints </span><span class="cov0" title="0">{
+                factory := func(endpoint string, timeout time.Duration) (*grpc.ClientConn, error) </span><span class="cov0" title="0">{
+                        return newConn(endpoint, timeout)
+                }</span>
+                <span class="cov0" title="0">closeFunc := func(conn *grpc.ClientConn) error </span><span class="cov0" title="0">{ return conn.Close() }</span>
+                <span class="cov0" title="0">poolcfg := &amp;PoolConfig{
+                        InitialCap:  endpoint.InitialCap,
+                        MaxCap:      endpoint.MaxCap,
+                        Factory:     factory,
+                        Close:       closeFunc,
+                        IdleTimeout: time.Duration(endpoint.IdleTimeout) * time.Second,
+                        Endpoint:    endpoint.Endpoint,
+                        Timeout:     timeout,
+                }
+                var err error
+                connPool[name], err = NewChannelPool(poolcfg)
+                // todo log grpc error
+                if err != nil </span>{<span class="cov0" title="0">
+
+                }</span>
+        }
+        <span class="cov0" title="0">endpoints = nil
+
+        return connPool</span>
+}
+
+func newConn(endpoint string, timeout time.Duration) (*grpc.ClientConn, error) <span class="cov0" title="0">{
+        retryOpts := []grpc_retry.CallOption{
+                //grpc_retry.WithCodes(codes.Canceled, codes.DataLoss, codes.Unavailable),
+                grpc_retry.WithCodes(codes.DataLoss, codes.Unavailable),
+                grpc_retry.WithMax(3),
+                grpc_retry.WithBackoff(grpc_retry.BackoffExponential(100 * time.Millisecond)),
+        }
+        ctx, cancel := context.WithTimeout(context.Background(), timeout)
+        defer cancel()
+
+        conn, err := grpc.DialContext(ctx,
+                endpoint,
+                grpc.WithTransportCredentials(insecure.NewCredentials()), // returns a DialOption which disables transport security for this ClientConn
+                grpc.WithKeepaliveParams(keepalive.ClientParameters{
+                        Time:                time.Duration(15) * time.Second,
+                        Timeout:             time.Duration(3) * time.Second,
+                        PermitWithoutStream: true,
+                }),
+                grpc.WithUnaryInterceptor(grpc_middleware.ChainUnaryClient(
+                        //grpc_opentracing.UnaryClientInterceptor(),
+                        TimeoutUnaryClientInterceptor(timeout),
+                        grpc_retry.UnaryClientInterceptor(retryOpts...),
+                        RPCConnectMonitor(),
+                        //grpc_prometheus.GetGrpcClientMetrics().UnaryClientInterceptor(),
+                )),
+        )
+
+        // todo log errors
+
+        return conn, err
+}</span>
+
+// RPCConnectMonitor gRPC.Server 重启, gRPC.Pool连接的时健康检测
+func RPCConnectMonitor() grpc.UnaryClientInterceptor <span class="cov0" title="0">{
+        return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error </span><span class="cov0" title="0">{
+                grpcState := cc.GetState()
+
+                if grpcState == connectivity.TransientFailure || grpcState == connectivity.Shutdown </span><span class="cov0" title="0">{
+                        cc.ResetConnectBackoff()
+                        grpcState = cc.GetState()
+                }</span>
+
+                <span class="cov0" title="0">if grpcState != connectivity.Ready &amp;&amp; grpcState != connectivity.Connecting &amp;&amp; grpcState != connectivity.Idle </span><span class="cov0" title="0">{
+                        //log.Printf("grpc.Server unavailable, state: %d, method: %s, req: %v", grpcState, method, req)
+                        return status.Error(codes.Unavailable, "")
+                }</span>
+
+                //newCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+                //defer cancel()
+
+                <span class="cov0" title="0">err := invoker(ctx, method, req, reply, cc, opts...)
+                return err</span>
+        }
+}
+
+// TimeoutUnaryClientInterceptor returns a new unary client interceptor that sets a timeout on the request context.
+func TimeoutUnaryClientInterceptor(timeout time.Duration) grpc.UnaryClientInterceptor <span class="cov0" title="0">{
+        return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error </span><span class="cov0" title="0">{
+                deadline, _ := ctx.Deadline()
+                if time.Until(deadline).Microseconds() &gt; 0 </span><span class="cov0" title="0">{
+                        return invoker(ctx, method, req, reply, cc, opts...)
+                }</span>
+
+                <span class="cov0" title="0">ctxTm, cancel := context.WithTimeout(ctx, timeout)
+                defer cancel()
+                return invoker(ctxTm, method, req, reply, cc, opts...)</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package bootstrap
+
+import (
+        "context"
+        "fmt"
+        "log"
+        "time"
+
+        "github.com/IBM/sarama"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+)
+
+// KafkaConfig Kafka配置结构
+type KafkaConfig struct {
+        Brokers  []BrokerConfig   `yaml:"brokers"`
+        SSL      SSLConfig        `yaml:"ssl"`
+        Producer ProducerConfig   `yaml:"producer"`
+        Consumer ConsumerConfig   `yaml:"consumer"`
+        Version  string           `yaml:"version"`
+}
+
+type BrokerConfig struct {
+        Host string `yaml:"host"`
+        Port int    `yaml:"port"`
+}
+
+type SSLConfig struct {
+        Enable bool `yaml:"enable"`
+}
+
+type ProducerConfig struct {
+        RequiredAcks    int  `yaml:"required_acks"`
+        MaxRetries      int  `yaml:"max_retries"`
+        ReturnSuccesses bool `yaml:"return_successes"`
+        ReturnErrors    bool `yaml:"return_errors"`
+}
+
+type ConsumerConfig struct {
+        GroupID    string `yaml:"group_id"`
+        AutoCommit bool   `yaml:"auto_commit"`
+}
+
+// KafkaManager Kafka管理器
+type KafkaManager struct {
+        config        *KafkaConfig
+        brokers       []string
+        syncProducer  sarama.SyncProducer
+        asyncProducer sarama.AsyncProducer
+}
+
+var kafkaManager *KafkaManager
+
+// InitKafka 初始化Kafka连接
+func InitKafka(env string) error <span class="cov0" title="0">{
+        configPath := fmt.Sprintf("%sconfig/%s/kafka.yml", ProjectPath(), env)
+        kafkaConfig, err := loadKafkaConfig(configPath)
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("加载Kafka配置失败: %v", err)
+        }</span>
+
+        // 构建broker地址列表
+        <span class="cov0" title="0">brokers := make([]string, 0, len(kafkaConfig.Brokers))
+        for _, broker := range kafkaConfig.Brokers </span><span class="cov0" title="0">{
+                brokers = append(brokers, fmt.Sprintf("%s:%d", broker.Host, broker.Port))
+        }</span>
+
+        <span class="cov0" title="0">kafkaManager = &amp;KafkaManager{
+                config:  kafkaConfig,
+                brokers: brokers,
+        }
+
+        log.Printf("Kafka初始化成功, Brokers: %v", brokers)
+        return nil</span>
+}
+
+// loadKafkaConfig 加载Kafka配置
+func loadKafkaConfig(configPath string) (*KafkaConfig, error) <span class="cov5" title="2">{
+        cfg, err := config.GetConfig(configPath)
+        if err != nil </span><span class="cov1" title="1">{
+                return nil, err
+        }</span>
+
+        <span class="cov1" title="1">kafkaConfig := &amp;KafkaConfig{}
+
+        // 加载brokers
+        brokersList, err := cfg.List("brokers")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("读取brokers配置失败: %v", err)
+        }</span>
+
+        <span class="cov1" title="1">for _, item := range brokersList </span><span class="cov5" title="2">{
+                var broker BrokerConfig
+                var host string
+                var port int
+                
+                // 尝试多种类型转换
+                if brokerMap, ok := item.(map[interface{}]interface{}); ok </span><span class="cov0" title="0">{
+                        host = brokerMap["host"].(string)
+                        // port可能是int或float64
+                        switch v := brokerMap["port"].(type) </span>{
+                        case int:<span class="cov0" title="0">
+                                port = v</span>
+                        case float64:<span class="cov0" title="0">
+                                port = int(v)</span>
+                        default:<span class="cov0" title="0">
+                                return nil, fmt.Errorf("无法解析broker port: %v", v)</span>
+                        }
+                } else<span class="cov5" title="2"> if brokerMap, ok := item.(map[string]interface{}); ok </span><span class="cov5" title="2">{
+                        host = brokerMap["host"].(string)
+                        // port可能是int或float64
+                        switch v := brokerMap["port"].(type) </span>{
+                        case int:<span class="cov5" title="2">
+                                port = v</span>
+                        case float64:<span class="cov0" title="0">
+                                port = int(v)</span>
+                        default:<span class="cov0" title="0">
+                                return nil, fmt.Errorf("无法解析broker port: %v", v)</span>
+                        }
+                } else<span class="cov0" title="0"> {
+                        return nil, fmt.Errorf("无法解析broker配置: %v", item)
+                }</span>
+                
+                <span class="cov5" title="2">broker = BrokerConfig{Host: host, Port: port}
+                kafkaConfig.Brokers = append(kafkaConfig.Brokers, broker)</span>
+        }
+
+        // 加载SSL配置
+        <span class="cov1" title="1">sslEnable, _ := cfg.Bool("ssl.enable")
+        kafkaConfig.SSL.Enable = sslEnable
+
+        // 加载Producer配置
+        requiredAcks, _ := cfg.Int("producer.required_acks")
+        maxRetries, _ := cfg.Int("producer.max_retries")
+        returnSuccesses, _ := cfg.Bool("producer.return_successes")
+        returnErrors, _ := cfg.Bool("producer.return_errors")
+
+        kafkaConfig.Producer = ProducerConfig{
+                RequiredAcks:    requiredAcks,
+                MaxRetries:      maxRetries,
+                ReturnSuccesses: returnSuccesses,
+                ReturnErrors:    returnErrors,
+        }
+
+        // 加载Consumer配置
+        groupID, _ := cfg.String("consumer.group_id")
+        autoCommit, _ := cfg.Bool("consumer.auto_commit")
+
+        kafkaConfig.Consumer = ConsumerConfig{
+                GroupID:    groupID,
+                AutoCommit: autoCommit,
+        }
+
+        // 加载版本
+        version, _ := cfg.String("version")
+        kafkaConfig.Version = version
+
+        return kafkaConfig, nil</span>
+}
+
+// getProducerConfig 获取生产者配置
+func (km *KafkaManager) getProducerConfig() *sarama.Config <span class="cov1" title="1">{
+        config := sarama.NewConfig()
+
+        // 设置版本
+        if km.config.Version != "" </span><span class="cov1" title="1">{
+                if version, err := sarama.ParseKafkaVersion(km.config.Version); err == nil </span><span class="cov1" title="1">{
+                        config.Version = version
+                }</span>
+        }
+
+        // Producer配置
+        <span class="cov1" title="1">config.Producer.RequiredAcks = sarama.RequiredAcks(km.config.Producer.RequiredAcks)
+        config.Producer.Retry.Max = km.config.Producer.MaxRetries
+        config.Producer.Return.Successes = km.config.Producer.ReturnSuccesses
+        config.Producer.Return.Errors = km.config.Producer.ReturnErrors
+        config.Producer.Partitioner = sarama.NewRandomPartitioner
+
+        // SSL配置
+        config.Net.TLS.Enable = km.config.SSL.Enable
+
+        return config</span>
+}
+
+// getSyncProducer 获取同步生产者(单例模式)
+func (km *KafkaManager) getSyncProducer() (sarama.SyncProducer, error) <span class="cov10" title="4">{
+        if km.syncProducer != nil </span><span class="cov10" title="4">{
+                return km.syncProducer, nil
+        }</span>
+
+        <span class="cov0" title="0">config := km.getProducerConfig()
+        producer, err := sarama.NewSyncProducer(km.brokers, config)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("创建同步生产者失败: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">km.syncProducer = producer
+        return producer, nil</span>
+}
+
+// getAsyncProducer 获取异步生产者(单例模式)
+func (km *KafkaManager) getAsyncProducer() (sarama.AsyncProducer, error) <span class="cov5" title="2">{
+        if km.asyncProducer != nil </span><span class="cov5" title="2">{
+                return km.asyncProducer, nil
+        }</span>
+
+        <span class="cov0" title="0">config := km.getProducerConfig()
+        config.Producer.RequiredAcks = sarama.WaitForLocal // 异步模式使用更高的吞吐量
+
+        producer, err := sarama.NewAsyncProducer(km.brokers, config)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("创建异步生产者失败: %v", err)
+        }</span>
+
+        <span class="cov0" title="0">km.asyncProducer = producer
+
+        // 启动监听goroutine
+        go func() </span><span class="cov0" title="0">{
+                for </span><span class="cov0" title="0">{
+                        select </span>{
+                        case success := &lt;-producer.Successes():<span class="cov0" title="0">
+                                if success != nil </span><span class="cov0" title="0">{
+                                        log.Printf("Kafka消息发送成功: Topic=%s, Partition=%d, Offset=%d",
+                                                success.Topic, success.Partition, success.Offset)
+                                }</span>
+                        case err := &lt;-producer.Errors():<span class="cov0" title="0">
+                                if err != nil </span><span class="cov0" title="0">{
+                                        log.Printf("Kafka消息发送失败: %v", err)
+                                }</span>
+                        }
+                }
+        }()
+
+        <span class="cov0" title="0">return producer, nil</span>
+}
+
+// ProducerSync 同步发送消息
+func ProducerSync(topic string, message string) error <span class="cov8" title="3">{
+        return ProducerSyncWithContext(context.Background(), topic, message)
+}</span>
+
+// ProducerSyncWithContext 带上下文的同步发送消息
+func ProducerSyncWithContext(ctx context.Context, topic string, message string) error <span class="cov10" title="4">{
+        if kafkaManager == nil </span><span class="cov1" title="1">{
+                return fmt.Errorf("Kafka未初始化，请先调用InitKafka")
+        }</span>
+
+        <span class="cov8" title="3">producer, err := kafkaManager.getSyncProducer()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="3">msg := &amp;sarama.ProducerMessage{
+                Topic: topic,
+                Value: sarama.StringEncoder(message),
+        }
+
+        partition, offset, err := producer.SendMessage(msg)
+        if err != nil </span><span class="cov1" title="1">{
+                return fmt.Errorf("发送消息失败: %v", err)
+        }</span>
+
+        <span class="cov5" title="2">log.Printf("消息发送成功! Topic: %s, Partition: %d, Offset: %d", topic, partition, offset)
+        return nil</span>
+}
+
+// ProducerAsync 异步发送消息
+func ProducerAsync(topic string, message string) error <span class="cov1" title="1">{
+        return ProducerAsyncWithContext(context.Background(), topic, message)
+}</span>
+
+// ProducerAsyncWithContext 带上下文的异步发送消息
+func ProducerAsyncWithContext(ctx context.Context, topic string, message string) error <span class="cov5" title="2">{
+        if kafkaManager == nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("Kafka未初始化，请先调用InitKafka")
+        }</span>
+
+        <span class="cov5" title="2">producer, err := kafkaManager.getAsyncProducer()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov5" title="2">msg := &amp;sarama.ProducerMessage{
+                Topic: topic,
+                Value: sarama.StringEncoder(message),
+        }
+
+        select </span>{
+        case producer.Input() &lt;- msg:<span class="cov1" title="1">
+                return nil</span>
+        case &lt;-ctx.Done():<span class="cov1" title="1">
+                return ctx.Err()</span>
+        case &lt;-time.After(5 * time.Second):<span class="cov0" title="0">
+                return fmt.Errorf("发送消息超时")</span>
+        }
+}
+
+// ProducerSyncBatch 批量同步发送消息
+func ProducerSyncBatch(topic string, messages []string) error <span class="cov1" title="1">{
+        if kafkaManager == nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("Kafka未初始化，请先调用InitKafka")
+        }</span>
+
+        <span class="cov1" title="1">producer, err := kafkaManager.getSyncProducer()
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov1" title="1">var sendErrors []error
+        for _, message := range messages </span><span class="cov8" title="3">{
+                msg := &amp;sarama.ProducerMessage{
+                        Topic: topic,
+                        Value: sarama.StringEncoder(message),
+                }
+
+                _, _, err := producer.SendMessage(msg)
+                if err != nil </span><span class="cov0" title="0">{
+                        sendErrors = append(sendErrors, err)
+                }</span>
+        }
+
+        <span class="cov1" title="1">if len(sendErrors) &gt; 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("批量发送失败, 错误数: %d, 首个错误: %v", len(sendErrors), sendErrors[0])
+        }</span>
+
+        <span class="cov1" title="1">log.Printf("批量发送成功! Topic: %s, 消息数: %d", topic, len(messages))
+        return nil</span>
+}
+
+// Close 关闭Kafka连接
+func CloseKafka() error <span class="cov5" title="2">{
+        if kafkaManager == nil </span><span class="cov1" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov1" title="1">var errs []error
+
+        if kafkaManager.syncProducer != nil </span><span class="cov1" title="1">{
+                if err := kafkaManager.syncProducer.Close(); err != nil </span><span class="cov0" title="0">{
+                        errs = append(errs, fmt.Errorf("关闭同步生产者失败: %v", err))
+                }</span>
+        }
+
+        <span class="cov1" title="1">if kafkaManager.asyncProducer != nil </span><span class="cov1" title="1">{
+                if err := kafkaManager.asyncProducer.Close(); err != nil </span><span class="cov0" title="0">{
+                        errs = append(errs, fmt.Errorf("关闭异步生产者失败: %v", err))
+                }</span>
+        }
+
+        <span class="cov1" title="1">if len(errs) &gt; 0 </span><span class="cov0" title="0">{
+                return fmt.Errorf("关闭Kafka连接时出现错误: %v", errs)
+        }</span>
+
+        <span class="cov1" title="1">log.Println("Kafka连接已关闭")
+        return nil</span>
+}
+
+// GetKafkaManager 获取Kafka管理器实例(用于测试)
+func GetKafkaManager() *KafkaManager <span class="cov0" title="0">{
+        return kafkaManager
+}</span>
+
+// SetKafkaManager 设置Kafka管理器实例(用于测试)
+func SetKafkaManager(manager *KafkaManager) <span class="cov0" title="0">{
+        kafkaManager = manager
+}</span>
+</pre>
+		
+		<pre class="file" id="file8" style="display: none">package bootstrap
+
+import (
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+        "github.com/JasonMetal/submodule-support-go.git/helper/logger"
+        "github.com/gin-gonic/gin"
+        "go.uber.org/zap"
+        "go.uber.org/zap/zapcore"
+        "gopkg.in/natefinch/lumberjack.v2"
+        "net"
+        "net/http"
+        "net/http/httputil"
+        "os"
+        "runtime/debug"
+        "strings"
+        "time"
+)
+
+type loggerConfig struct {
+        Level      string
+        LogType    string
+        LogPath    string
+        Filename   string
+        MaxSize    int
+        MaxBackups int
+        MaxAge     int
+        Compress   bool
+}
+
+func InitLogger() <span class="cov0" title="0">{
+        path := fmt.Sprintf("%sconfig/%s/logger.yml", ProjectPath(), DevEnv)
+
+        cfg, err := config.GetConfig(path)
+        if err != nil </span><span class="cov0" title="0">{
+                panic("init logger err" + err.Error())</span>
+        }
+
+        <span class="cov0" title="0">filename, _ := cfg.String("logger.filename")
+        maxSize, _ := cfg.Int("logger.maxSize")
+        maxBackup, _ := cfg.Int("logger.maxBackup")
+        maxAge, _ := cfg.Int("logger.maxAge")
+        compress, _ := cfg.Bool("logger.compress")
+        logType, _ := cfg.String("logger.logType")
+        level, _ := cfg.String("logger.level")
+        logPath, _ := cfg.String("logger.logPath")
+        logcfg := &amp;loggerConfig{
+                Level:      level,
+                LogType:    logType,
+                LogPath:    logPath,
+                Filename:   filename,
+                MaxSize:    maxSize,
+                MaxBackups: maxBackup,
+                MaxAge:     maxAge,
+                Compress:   compress,
+        }
+        // 获取日志写入介质
+        writeSyncer := getLogWriter(logcfg)
+        // 设置日志等级，具体请见 config/logger.yml 文件
+        logLevel := new(zapcore.Level)
+        if err := logLevel.UnmarshalText([]byte(level)); err != nil </span><span class="cov0" title="0">{
+                fmt.Println("日志初始化错误，日志级别设置有误。请修改 config/logger.yml 文件中的 logger.level 配置项")
+        }</span>
+        //初始化错误等级
+        <span class="cov0" title="0">_ = logLevel.Set(level)
+        // 初始化 core
+        core := zapcore.NewCore(getEncoder(), writeSyncer, logLevel)
+
+        // 初始化 Logger
+        Logger := zap.New(core,
+                zap.AddCaller(),                   // 调用文件和行号，内部使用 runtime.Caller
+                zap.AddCallerSkip(1),              // 封装了一层，调用文件去除一层(runtime.Caller(1))
+                zap.AddStacktrace(zap.ErrorLevel), // Error 时才会显示 stacktrace
+        )
+
+        // 将自定义的 logger 替换为全局的 logger
+        logger.SetLogger(Logger)
+
+        // zap.L().Fatal() 调用时，就会使用我们自定的 Logger
+        zap.ReplaceGlobals(Logger)
+
+        return</span>
+}
+
+// getEncoder 设置日志存储格式
+func getEncoder() zapcore.Encoder <span class="cov0" title="0">{
+
+        // 日志格式规则
+        encoderConfig := zapcore.EncoderConfig{
+                TimeKey:        "time",
+                LevelKey:       "level",
+                NameKey:        "logger",
+                CallerKey:      "caller", // 代码调用，如 paginator/paginator.go:148
+                FunctionKey:    zapcore.OmitKey,
+                MessageKey:     "message",
+                StacktraceKey:  "stacktrace",
+                LineEnding:     zapcore.DefaultLineEnding,     // 每行日志的结尾添加 "\n"
+                EncodeLevel:    zapcore.CapitalLevelEncoder,   // 日志级别名称大写，如 ERROR、INFO
+                EncodeTime:     customTimeEncoder,             // 时间格式，我们自定义为 2006-01-02 15:04:05
+                EncodeDuration: zapcore.MillisDurationEncoder, // 执行时间，以秒为单位
+                EncodeCaller:   zapcore.ShortCallerEncoder,    // Caller 短格式，如：types/converter.go:17，长格式为绝对路径
+        }
+
+        // 本地环境配置
+        if DevEnv == EnvLocal </span><span class="cov0" title="0">{
+                // 终端输出的关键词高亮
+                encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+                // 本地设置内置的 Console 解码器（支持 stacktrace 换行）
+                return zapcore.NewConsoleEncoder(encoderConfig)
+        }</span>
+
+        // 线上环境使用 JSON 编码器
+        <span class="cov0" title="0">return zapcore.NewJSONEncoder(encoderConfig)</span>
+}
+
+// customTimeEncoder 自定义友好的时间格式
+func customTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) <span class="cov0" title="0">{
+        enc.AppendString(t.Format("2006-01-02 15:04:05"))
+}</span>
+
+// getLogWriter 日志记录介质
+func getLogWriter(logcfg *loggerConfig) zapcore.WriteSyncer <span class="cov0" title="0">{
+        filename := logcfg.Filename
+        // 按照日期记录日志文件
+        if logcfg.LogType == "daily" </span><span class="cov0" title="0">{
+                filename = logcfg.LogPath + GetProjectName() + "-" + time.Now().Format("2006-01-02.log")
+        }</span>
+
+        // 滚动日志，详见 config/logger.yml
+        <span class="cov0" title="0">lumberJackLogger := &amp;lumberjack.Logger{
+                Filename:   filename,
+                MaxSize:    logcfg.MaxSize,
+                MaxBackups: logcfg.MaxBackups,
+                MaxAge:     logcfg.MaxAge,
+                Compress:   logcfg.Compress,
+        }
+        // 配置输出介质
+        if DevEnv == EnvLocal </span><span class="cov0" title="0">{
+                // 本地开发终端打印和记录文件
+                //return zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(lumberJackLogger))
+                return zapcore.AddSync(lumberJackLogger)
+
+        }</span> else<span class="cov0" title="0"> {
+                // 生产环境只记录文件
+                return zapcore.AddSync(lumberJackLogger)
+        }</span>
+}
+
+// SetLogger 接收gin框架默认的日志
+func SetLogger() gin.HandlerFunc <span class="cov0" title="0">{
+        return func(c *gin.Context) </span><span class="cov0" title="0">{
+                start := time.Now()
+                path := c.Request.URL.Path
+                query := c.Request.URL.RawQuery
+                c.Next()
+                cost := time.Since(start)
+                // 过滤健康检测
+                if c.Request.UserAgent() != "clb-healthcheck" &amp;&amp; path != "/ping" </span><span class="cov0" title="0">{
+                        logger.Info(path,
+                                zap.Int("status", c.Writer.Status()),
+                                zap.String("method", c.Request.Method),
+                                zap.String("path", path),
+                                zap.String("query", query),
+                                zap.String("ip", c.ClientIP()),
+                                zap.String("user-agent", c.Request.UserAgent()),
+                                zap.String("errors", c.Errors.ByType(gin.ErrorTypePrivate).String()),
+                                zap.Duration("cost", cost),
+                        )
+                }</span>
+        }
+}
+
+func LogRecovery() gin.HandlerFunc <span class="cov0" title="0">{
+        return func(c *gin.Context) </span><span class="cov0" title="0">{
+                defer func() </span><span class="cov0" title="0">{
+                        if err := recover(); err != nil </span><span class="cov0" title="0">{
+                                // Check for a broken connection, as it is not really a
+                                // condition that warrants a panic stack trace.
+                                var brokenPipe bool
+                                if ne, ok := err.(*net.OpError); ok </span><span class="cov0" title="0">{
+                                        if se, ok := ne.Err.(*os.SyscallError); ok </span><span class="cov0" title="0">{
+                                                if strings.Contains(strings.ToLower(se.Error()), "broken pipe") || strings.Contains(strings.ToLower(se.Error()), "connection reset by peer") </span><span class="cov0" title="0">{
+                                                        brokenPipe = true
+                                                }</span>
+                                        }
+                                }
+
+                                <span class="cov0" title="0">httpRequest, _ := httputil.DumpRequest(c.Request, false)
+                                if brokenPipe </span><span class="cov0" title="0">{
+                                        logger.Error(c.Request.URL.Path,
+                                                zap.Any("error", err),
+                                                zap.String("request", string(httpRequest)),
+                                        )
+                                        // If the connection is dead, we can't write a status to it.
+                                        c.Error(err.(error)) // nolint: errcheck
+                                        c.Abort()
+                                        return
+                                }</span>
+
+                                <span class="cov0" title="0">logger.Error("[Recovery from panic]",
+                                        zap.Time("time", time.Now()),
+                                        zap.Any("error", err),
+                                        zap.String("request", string(httpRequest)),
+                                        zap.String("stack", string(debug.Stack())),
+                                )
+
+                                c.JSON(http.StatusInternalServerError, map[string]any{
+                                        "code":    1000,
+                                        "data":    struct{}{},
+                                        "message": "api panic",
+                                })
+                                c.AbortWithStatus(http.StatusInternalServerError)</span>
+
+                        }
+                }()
+                <span class="cov0" title="0">c.Next()</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file9" style="display: none">package bootstrap
+
+import (
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+        redisHelper "github.com/JasonMetal/submodule-support-go.git/helper/redis"
+        redis "github.com/go-redis/redis/v8"
+        yCfg "github.com/olebedev/config"
+        "os"
+        "time"
+)
+
+type RedisClient struct {
+        Client *redis.Client
+}
+
+func InitRedis() <span class="cov0" title="0">{
+        dbList := getDbNames("redis")
+        for _, dbname := range dbList </span><span class="cov0" title="0">{
+                instances, err := initRedisPool(dbname)
+                if err == nil </span><span class="cov0" title="0">{
+                        redisHelper.SetRedisInstance(dbname, instances)
+                }</span>
+        }
+
+        //go closePool()
+}
+
+func initRedisPool(dbName string) ([]redisHelper.RedisInstance, error) <span class="cov0" title="0">{
+        path := fmt.Sprintf("%sconfig/%s/redis.yml", ProjectPath(), DevEnv)
+
+        cfg, err := config.GetConfig(path)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        //maxIdle, _ := cfg.Int("redis." + dbName + ".maxIdle")
+        <span class="cov0" title="0">maxActive, _ := cfg.Int("redis." + dbName + ".maxActive")
+        idleTimeout, _ := cfg.Int("redis." + dbName + ".idleTimeout")
+
+        servers, err := cfg.List("redis." + dbName + ".servers")
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">redisPools := make([]redisHelper.RedisInstance, len(servers))
+        for k, v := range servers </span><span class="cov0" title="0">{
+                address, _ := yCfg.Get(v, "address")
+                passwd, _ := yCfg.Get(v, "passwd")
+                db, _ := yCfg.Get(v, "db")
+
+                if address == nil </span><span class="cov0" title="0">{
+                        os.Exit(1)
+                }</span>
+
+                // 建立连接
+                <span class="cov0" title="0">rds := &amp;RedisClient{}
+                // 使用默认的 context
+
+                // 使用 redis 库里的 NewClient 初始化连接
+                rds.Client = redis.NewClient(&amp;redis.Options{
+                        Addr:        address.(string),
+                        Password:    passwd.(string),
+                        DB:          db.(int),
+                        PoolSize:    maxActive,
+                        IdleTimeout: time.Duration(idleTimeout) * time.Second,
+                })
+                redisPools[k] = redisHelper.RedisInstance{
+                        Client: rds.Client,
+                }</span>
+
+        }
+
+        <span class="cov0" title="0">return redisPools, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file10" style="display: none">package bootstrap
+
+import (
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+        "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
+        "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
+        sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
+)
+
+type TencentSms struct {
+        Client     *sms.Client
+        Request    *sms.SendSmsRequest
+        MobileCode string
+}
+
+var TencentSmsClient = &amp;TencentSms{}
+
+func InitSms() <span class="cov0" title="0">{
+        initDefaultConfig()
+}</span>
+
+// 初始化默认配置
+func initDefaultConfig() <span class="cov0" title="0">{
+        path := fmt.Sprintf("%sconfig/%s/sms.yml", ProjectPath(), DevEnv)
+        smsConfigs, err := config.GetConfig(path)
+        if err == nil </span><span class="cov0" title="0">{
+                /* 必要步骤：
+                 * 实例化一个认证对象，入参需要传入腾讯云账户密钥对secretId，secretKey。
+                 * 这里采用的是从环境变量读取的方式，需要在环境变量中先设置这两个值。
+                 * 你也可以直接在代码中写死密钥对，但是小心不要将代码复制、上传或者分享给他人，
+                 * 以免泄露密钥对危及你的财产安全。
+                 * SecretId、SecretKey 查询: https://console.cloud.tencent.com/cam/capi */
+                SmsSdkAppId, _ := smsConfigs.String("tencent.SmsSdkAppId")
+                SecretId, _ := smsConfigs.String("tencent.SecretId")
+                SecretKey, _ := smsConfigs.String("tencent.SecretKey")
+                ReqMethod, _ := smsConfigs.String("tencent.ReqMethod")
+                Endpoint, _ := smsConfigs.String("tencent.Endpoint")
+                HmacSHA1, _ := smsConfigs.String("tencent.HmacSHA1")
+                Region, _ := smsConfigs.String("tencent.Region")
+                SignName, _ := smsConfigs.String("tencent.SignName")
+                MobileCode, _ := smsConfigs.String("tencent.MobileCode")
+
+                credential := common.NewCredential(
+                        SecretId,
+                        SecretKey,
+                )
+                /* 非必要步骤:
+                 * 实例化一个客户端配置对象，可以指定超时时间等配置 */
+                cpf := profile.NewClientProfile()
+
+                /* SDK默认使用POST方法。
+                 * 如果你一定要使用GET方法，可以在这里设置。GET方法无法处理一些较大的请求 */
+                cpf.HttpProfile.ReqMethod = ReqMethod
+
+                /* SDK有默认的超时时间，非必要请不要进行调整
+                 * 如有需要请在代码中查阅以获取最新的默认值 */
+                // cpf.HttpProfile.ReqTimeout = 5
+
+                /* 指定接入地域域名，默认就近地域接入域名为 sms.tencentcloudapi.com ，也支持指定地域域名访问，例如广州地域的域名为 sms.ap-guangzhou.tencentcloudapi.com */
+                cpf.HttpProfile.Endpoint = Endpoint
+
+                /* SDK默认用TC3-HMAC-SHA256进行签名，非必要请不要修改这个字段 */
+                cpf.SignMethod = HmacSHA1
+
+                /* 实例化要请求产品(以sms为例)的client对象
+                 * 第二个参数是地域信息，可以直接填写字符串ap-guangzhou，支持的地域列表参考 https://cloud.tencent.com/document/api/382/52071#.E5.9C.B0.E5.9F.9F.E5.88.97.E8.A1.A8 */
+                client, _ := sms.NewClient(credential, Region, cpf)
+
+                /* 实例化一个请求对象，根据调用的接口和实际情况，可以进一步设置请求参数
+                 * 你可以直接查询SDK源码确定接口有哪些属性可以设置
+                 * 属性可能是基本类型，也可能引用了另一个数据结构
+                 * 推荐使用IDE进行开发，可以方便的跳转查阅各个接口和数据结构的文档说明 */
+                request := sms.NewSendSmsRequest()
+
+                /* 基本类型的设置:
+                 * SDK采用的是指针风格指定参数，即使对于基本类型你也需要用指针来对参数赋值。
+                 * SDK提供对基本类型的指针引用封装函数
+                 * 帮助链接：
+                 * 短信控制台: https://console.cloud.tencent.com/smsv2
+                 * 腾讯云短信小助手: https://cloud.tencent.com/document/product/382/3773#.E6.8A.80.E6.9C.AF.E4.BA.A4.E6.B5.81 */
+
+                /* 短信应用ID: 短信SdkAppId在 [短信控制台] 添加应用后生成的实际SdkAppId，示例如1400006666 */
+                // 应用 ID 可前往 [短信控制台](https://console.cloud.tencent.com/smsv2/app-manage) 查看
+                request.SmsSdkAppId = common.StringPtr(SmsSdkAppId)
+
+                /* 短信签名内容: 使用 UTF-8 编码，必须填写已审核通过的签名 */
+                // 签名信息可前往 [国内短信](https://console.cloud.tencent.com/smsv2/csms-sign) 或 [国际/港澳台短信](https://console.cloud.tencent.com/smsv2/isms-sign) 的签名管理查看
+                request.SignName = common.StringPtr(SignName)
+                TencentSmsClient.Client = client
+                TencentSmsClient.Request = request
+                TencentSmsClient.MobileCode = MobileCode
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">package bootstrap
+
+import (
+        "fmt"
+        "github.com/JasonMetal/submodule-support-go.git/helper/config"
+        sts "github.com/tencentyun/qcloud-cos-sts-sdk/go"
+)
+
+type StsClient struct {
+        AppId           string
+        Client          *sts.Client
+        Region          string
+        BucketName      string
+        DurationSeconds int
+        Bucket          string
+        Domain          string
+}
+
+var StsClientList = make(map[string]StsClient)
+
+func InitSts() <span class="cov0" title="0">{
+        initDefault()
+}</span>
+
+func initDefault() <span class="cov0" title="0">{
+        path := fmt.Sprintf("%sconfig/%s/tencentyun.yml", ProjectPath(), DevEnv)
+
+        stsConfigs, err := config.GetConfig(path)
+
+        configList, err := stsConfigs.Map("tencentyun")
+        if err == nil </span><span class="cov0" title="0">{
+                for project, _ := range configList </span><span class="cov0" title="0">{
+                        secretId, _ := stsConfigs.String("tencentyun." + project + ".secretId")
+                        secretKey, _ := stsConfigs.String("tencentyun." + project + ".secretKey")
+                        appId, _ := stsConfigs.String("tencentyun." + project + ".appId")
+                        region, _ := stsConfigs.String("tencentyun." + project + ".Region")
+                        durationSeconds, _ := stsConfigs.Int("tencentyun." + project + ".durationSeconds")
+                        bucketName, _ := stsConfigs.String("tencentyun." + project + ".bucket")
+                        domain, _ := stsConfigs.String("tencentyun." + project + ".domain")
+                        c := sts.NewClient(secretId, secretKey, nil)
+                        StsClientList[project] = StsClient{
+                                AppId:           appId,
+                                Client:          c,
+                                Region:          region,
+                                DurationSeconds: durationSeconds,
+                                BucketName:      fmt.Sprintf("%s-%s", bucketName, appId),
+                                Bucket:          bucketName,
+                                Domain:          domain,
+                        }
+                }</span>
+        }
+
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
