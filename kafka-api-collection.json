@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "Kafka API Collection",
+    "description": "Kafka 消息收发和查询接口集合",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "1. 发送文本消息",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"test\",\n  \"message\": \"Hello Kafka! 这是一条测试消息\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/kafka/send",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "send"]
+        },
+        "description": "发送文本消息到 Kafka 主题"
+      }
+    },
+    {
+      "name": "2. 发送 JSON 消息",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"test-json\",\n  \"data\": {\n    \"user_id\": 99999,\n    \"action\": \"login\",\n    \"ip\": \"192.168.1.100\",\n    \"timestamp\": 1768874603\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/kafka/send-json",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "send-json"]
+        },
+        "description": "发送 JSON 格式消息到 Kafka 主题"
+      }
+    },
+    {
+      "name": "3. 查询消息 - 第1页",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/kafka/messages?topic=test-json&page=1&limit=10&partition=0",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "messages"],
+          "query": [
+            {
+              "key": "topic",
+              "value": "test-json",
+              "description": "主题名称"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "页码"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "每页数量"
+            },
+            {
+              "key": "partition",
+              "value": "0",
+              "description": "分区编号"
+            }
+          ]
+        },
+        "description": "查询 Kafka 消息，支持分页"
+      }
+    },
+    {
+      "name": "4. 查询消息 - 第2页",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/kafka/messages?topic=test-json&page=2&limit=10&partition=0",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "messages"],
+          "query": [
+            {
+              "key": "topic",
+              "value": "test-json",
+              "description": "主题名称"
+            },
+            {
+              "key": "page",
+              "value": "2",
+              "description": "页码"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "每页数量"
+            },
+            {
+              "key": "partition",
+              "value": "0",
+              "description": "分区编号"
+            }
+          ]
+        },
+        "description": "查询第2页消息"
+      }
+    },
+    {
+      "name": "5. 获取主题信息",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/kafka/topic-info?topic=test-json",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "topic-info"],
+          "query": [
+            {
+              "key": "topic",
+              "value": "test-json",
+              "description": "主题名称"
+            }
+          ]
+        },
+        "description": "获取主题的分区信息和消息统计"
+      }
+    },
+    {
+      "name": "6. 查询 test 主题消息",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/kafka/messages?topic=test&page=1&limit=10",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "messages"],
+          "query": [
+            {
+              "key": "topic",
+              "value": "test",
+              "description": "主题名称"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "页码"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "每页数量"
+            }
+          ]
+        },
+        "description": "查询 test 主题的文本消息"
+      }
+    },
+    {
+      "name": "7. 发送用户登录事件",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"user-events\",\n  \"data\": {\n    \"event_type\": \"login\",\n    \"user_id\": 12345,\n    \"username\": \"testuser\",\n    \"ip_address\": \"192.168.1.100\",\n    \"device\": \"Chrome/Windows\",\n    \"success\": true,\n    \"timestamp\": 1768874603\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/kafka/send-json",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "send-json"]
+        },
+        "description": "发送用户登录事件示例"
+      }
+    },
+    {
+      "name": "8. 发送订单创建事件",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"order-events\",\n  \"data\": {\n    \"event_type\": \"order_created\",\n    \"order_id\": \"ORD20260120001\",\n    \"user_id\": 12345,\n    \"amount\": 299.99,\n    \"items\": [\n      {\"product_id\": 1001, \"quantity\": 2},\n      {\"product_id\": 1002, \"quantity\": 1}\n    ],\n    \"status\": \"pending\",\n    \"created_at\": 1768874603\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/kafka/send-json",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "send-json"]
+        },
+        "description": "发送订单创建事件示例"
+      }
+    },
+    {
+      "name": "9. 批量发送消息（循环测试）",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"topic\": \"test-json\",\n  \"data\": {\n    \"batch_id\": \"{{$randomInt}}\",\n    \"message\": \"批量测试消息 #{{$randomInt}}\",\n    \"timestamp\": {{$timestamp}}\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/kafka/send-json",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["kafka", "send-json"]
+        },
+        "description": "用于测试分页，可以在 Apifox/Postman 中循环执行多次"
+      }
+    }
+  ]
+}

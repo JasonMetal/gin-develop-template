@@ -86,3 +86,37 @@ func (s *KafkaService) SendMetric(topic string, metricName string, metricValue f
 	}
 	return s.SendJSON(topic, metric)
 }
+
+// FetchMessages 获取指定主题和分区的消息
+func (s *KafkaService) FetchMessages(topic string, partition int32, offset int64, limit int) ([]*bootstrap.KafkaMessage, error) {
+	if limit <= 0 {
+		limit = 10 // 默认10条
+	}
+	if limit > 100 {
+		limit = 100 // 最多100条
+	}
+
+	return bootstrap.FetchMessages(topic, partition, offset, limit)
+}
+
+// FetchMessagesFromAllPartitions 从所有分区获取消息
+func (s *KafkaService) FetchMessagesFromAllPartitions(topic string, offset int64, limit int) ([]*bootstrap.KafkaMessage, error) {
+	if limit <= 0 {
+		limit = 10 // 默认10条
+	}
+	if limit > 100 {
+		limit = 100 // 最多100条
+	}
+
+	return bootstrap.FetchMessagesFromAllPartitions(topic, offset, limit)
+}
+
+// GetTopicPartitions 获取主题的分区信息
+func (s *KafkaService) GetTopicPartitions(topic string) ([]int32, error) {
+	return bootstrap.GetTopicPartitions(topic)
+}
+
+// GetPartitionOffset 获取分区的偏移量信息
+func (s *KafkaService) GetPartitionOffset(topic string, partition int32) (oldest int64, newest int64, err error) {
+	return bootstrap.GetPartitionOffset(topic, partition)
+}

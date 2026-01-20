@@ -1,0 +1,38 @@
+# RabbitMQ 配置 - 生产环境
+
+host: "rabbitmq-prod.example.com"
+port: 5672
+username: "prod_user"
+password: "prod_password_changeme"
+vhost: "/prod"
+
+pool:
+  max_open: 50
+  max_idle: 25
+  max_lifetime: 10800
+
+producer:
+  confirm_mode: true
+  mandatory: true
+  immediate: false
+
+consumer:
+  auto_ack: false
+  prefetch_count: 100
+  prefetch_size: 0
+
+reconnect:
+  max_retries: 20
+  interval: 2
+
+queue:
+  durable: true
+  auto_delete: false
+  exclusive: false
+  no_wait: false
+
+exchange:
+  durable: true
+  auto_delete: false
+  internal: false
+  no_wait: false

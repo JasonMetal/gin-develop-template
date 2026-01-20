@@ -1,0 +1,38 @@
+# RabbitMQ 配置 - 测试环境
+
+host: "rabbitmq-test.example.com"
+port: 5672
+username: "test_user"
+password: "test_password"
+vhost: "/test"
+
+pool:
+  max_open: 30
+  max_idle: 15
+  max_lifetime: 7200
+
+producer:
+  confirm_mode: true
+  mandatory: true
+  immediate: false
+
+consumer:
+  auto_ack: false
+  prefetch_count: 50
+  prefetch_size: 0
+
+reconnect:
+  max_retries: 10
+  interval: 3
+
+queue:
+  durable: true
+  auto_delete: false
+  exclusive: false
+  no_wait: false
+
+exchange:
+  durable: true
+  auto_delete: false
+  internal: false
+  no_wait: false

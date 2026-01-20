@@ -1,0 +1,394 @@
+{
+  "info": {
+    "name": "RabbitMQ API Collection",
+    "description": "RabbitMQ 消息队列接口集合",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "1. 发送简单消息",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"queue_name\": \"test-queue\",\n  \"message\": \"Hello RabbitMQ! 这是一条测试消息\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send"]
+        },
+        "description": "发送简单文本消息到队列"
+      }
+    },
+    {
+      "name": "2. 发送 JSON 消息",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"queue_name\": \"user-events\",\n  \"data\": {\n    \"user_id\": 12345,\n    \"action\": \"login\",\n    \"ip\": \"192.168.1.100\",\n    \"timestamp\": 1768874603\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-json",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-json"]
+        },
+        "description": "发送 JSON 格式消息"
+      }
+    },
+    {
+      "name": "3. 发送广播消息(Fanout)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exchange_name\": \"logs-fanout\",\n  \"message\": \"系统通知：服务器将在5分钟后重启\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-fanout",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-fanout"]
+        },
+        "description": "广播模式：消息会发送到所有绑定的队列"
+      }
+    },
+    {
+      "name": "4. 发送直接消息(Direct)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exchange_name\": \"logs-direct\",\n  \"routing_key\": \"error\",\n  \"message\": \"数据库连接失败\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-direct",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-direct"]
+        },
+        "description": "直接路由：根据routing_key精确匹配"
+      }
+    },
+    {
+      "name": "5. 发送主题消息(Topic)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exchange_name\": \"events-topic\",\n  \"routing_key\": \"user.created.premium\",\n  \"message\": \"Premium用户创建: user_12345\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-topic",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-topic"]
+        },
+        "description": "主题模式：支持通配符匹配(* 和 #)"
+      }
+    },
+    {
+      "name": "6. 发送任务消息",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"queue_name\": \"task-queue\",\n  \"task_name\": \"send_email\",\n  \"task_data\": {\n    \"to\": \"user@example.com\",\n    \"subject\": \"欢迎!\",\n    \"body\": \"欢迎使用我们的服务\"\n  }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-task",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-task"]
+        },
+        "description": "Worker队列模式：发送任务给工作者"
+      }
+    },
+    {
+      "name": "7. 批量发送消息",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"queue_name\": \"batch-queue\",\n  \"messages\": [\n    \"任务 1\",\n    \"任务 2\",\n    \"任务 3\",\n    \"任务 4\",\n    \"任务 5\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-batch",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-batch"]
+        },
+        "description": "批量发送多条消息"
+      }
+    },
+    {
+      "name": "8. 健康检查",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/health",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "health"]
+        },
+        "description": "检查RabbitMQ连接状态"
+      }
+    },
+    {
+      "name": "9. 发送日志事件(Topic示例)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exchange_name\": \"logs-topic\",\n  \"routing_key\": \"application.error.database\",\n  \"message\": \"数据库查询超时: query_id=12345\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-topic",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-topic"]
+        },
+        "description": "Topic模式示例：application.error.database"
+      }
+    },
+    {
+      "name": "10. 发送用户事件(Topic示例)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exchange_name\": \"user-events\",\n  \"routing_key\": \"user.registered.premium\",\n  \"message\": \"{\\\"user_id\\\":12345,\\\"plan\\\":\\\"premium\\\",\\\"trial_days\\\":30}\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/send-topic",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "send-topic"]
+        },
+        "description": "用户注册事件：user.registered.premium"
+      }
+    },
+    {
+      "name": "==================== 查询接口 ====================",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": []
+        },
+        "description": "以下是 RabbitMQ 查询相关接口"
+      }
+    },
+    {
+      "name": "11. 获取队列信息",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/queue/info?queue=test-queue",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "queue", "info"],
+          "query": [
+            {
+              "key": "queue",
+              "value": "test-queue",
+              "description": "队列名称"
+            }
+          ]
+        },
+        "description": "获取指定队列的详细信息（消息数、消费者数等）\n\n返回字段说明：\n- name: 队列名称\n- messages: 当前队列中的消息数量\n- consumers: 当前消费者数量\n- durable: 是否持久化\n- auto_delete: 是否自动删除\n- exclusive: 是否排他"
+      }
+    },
+    {
+      "name": "12. 查看队列消息（不消费）",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/queue/peek?queue=test-queue&limit=10",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "queue", "peek"],
+          "query": [
+            {
+              "key": "queue",
+              "value": "test-queue",
+              "description": "队列名称"
+            },
+            {
+              "key": "limit",
+              "value": "10",
+              "description": "查看数量（默认10，最多100）"
+            }
+          ]
+        },
+        "description": "查看队列中的消息，但不从队列中删除（消息会重新入队）\n\n⚠️ 注意：这是 Peek 模式，消息看完后会重新放回队列！\n\n适用场景：\n- 调试时查看消息内容\n- 监控队列消息状态\n- 不想消费消息，只是查看\n\n返回字段说明：\n- body: 消息体内容\n- content_type: 内容类型\n- delivery_mode: 投递模式（1=非持久化，2=持久化）\n- timestamp: 消息时间戳\n- headers: 消息头信息\n- routing_key: 路由键"
+      }
+    },
+    {
+      "name": "13. 消费队列消息（会删除）",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/queue/consume?queue=test-queue&limit=5",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "queue", "consume"],
+          "query": [
+            {
+              "key": "queue",
+              "value": "test-queue",
+              "description": "队列名称"
+            },
+            {
+              "key": "limit",
+              "value": "5",
+              "description": "消费数量（默认10，最多100）"
+            }
+          ]
+        },
+        "description": "从队列中消费消息（消息会被删除）\n\n⚠️ 警告：这是 Consume 模式，消息消费后会从队列中删除！\n\n适用场景：\n- 手动处理积压的消息\n- 清理测试消息\n- 需要真正消费消息时\n\n返回内容与 Peek 接口相同"
+      }
+    },
+    {
+      "name": "14. 清空队列所有消息",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"queue\": \"test-queue\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/queue/purge",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "queue", "purge"]
+        },
+        "description": "清空队列中的所有消息\n\n⚠️ 警告：这是危险操作，会删除队列中的所有消息！\n\n适用场景：\n- 清理测试数据\n- 重置队列状态\n- 清除错误消息\n\n返回字段：\n- queue: 队列名称\n- deleted_count: 删除的消息数量\n- success: 是否成功"
+      }
+    },
+    {
+      "name": "15. 删除队列",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"queue\": \"test-queue-to-delete\",\n  \"if_unused\": false,\n  \"if_empty\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/rabbitmq/queue/delete",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["rabbitmq", "queue", "delete"]
+        },
+        "description": "删除指定的队列\n\n⚠️ 警告：这是危险操作，会永久删除队列！\n\n参数说明：\n- queue: 队列名称（必填）\n- if_unused: 仅在没有消费者时删除（可选，默认false）\n- if_empty: 仅在队列为空时删除（可选，默认false）\n\n适用场景：\n- 删除临时队列\n- 清理不再使用的队列\n- 重建队列配置\n\n返回字段：\n- queue: 队列名称\n- deleted_count: 队列中删除的消息数量\n- success: 是否成功"
+      }
+    },
+    {
+      "name": "16. 批量测试流程",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": []
+        },
+        "description": "完整测试流程建议：\n\n1️⃣ 发送测试消息\n   POST /rabbitmq/send\n   { \"queue_name\": \"my-test-queue\", \"message\": \"测试消息1\" }\n\n2️⃣ 查看队列信息\n   GET /rabbitmq/queue/info?queue=my-test-queue\n   确认消息数量 messages > 0\n\n3️⃣ 查看消息（不消费）\n   GET /rabbitmq/queue/peek?queue=my-test-queue&limit=10\n   查看消息内容，消息不会被删除\n\n4️⃣ 再次查看队列信息\n   GET /rabbitmq/queue/info?queue=my-test-queue\n   消息数量应该不变\n\n5️⃣ 消费消息\n   GET /rabbitmq/queue/consume?queue=my-test-queue&limit=5\n   消息会被删除\n\n6️⃣ 再次查看队列信息\n   GET /rabbitmq/queue/info?queue=my-test-queue\n   消息数量应该减少\n\n7️⃣ 清空队列\n   POST /rabbitmq/queue/purge\n   { \"queue\": \"my-test-queue\" }\n\n8️⃣ 删除队列（可选）\n   POST /rabbitmq/queue/delete\n   { \"queue\": \"my-test-queue\" }"
+      }
+    }
+  ]
+}

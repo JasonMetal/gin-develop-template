@@ -3,6 +3,8 @@ package router
 import (
 	"develop-template/routes/api/authRouter"
 	"develop-template/routes/api/helloRouter"
+	"develop-template/routes/api/kafkaRouter"
+	"develop-template/routes/api/rabbitmqRouter"
 	"develop-template/routes/api/rsaGenRouter"
 	"github.com/gin-gonic/gin"
 	"strings"
@@ -19,6 +21,8 @@ func RegisterConfig() []func(r *gin.Engine) {
 		helloRouter.RegisterHello,
 		authRouter.RegisterAuth,
 		rsaGenRouter.RegisterRsaGen,
+		kafkaRouter.RegisterKafka,
+		rabbitmqRouter.RegisterRabbitMQ,
 	}
 }
 

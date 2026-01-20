@@ -1,0 +1,45 @@
+# RabbitMQ 配置 - 本地环境
+
+# 连接配置
+host: "localhost"
+port: 5672
+username: "admin"      # 使用新创建的用户
+password: "admin123"   # 使用新密码
+vhost: "/"
+
+# 连接池配置
+pool:
+  max_open: 10        # 最大连接数
+  max_idle: 5         # 最大空闲连接数
+  max_lifetime: 3600  # 连接最大生命周期（秒）
+
+# 生产者配置
+producer:
+  confirm_mode: true   # 是否开启消息确认模式
+  mandatory: false     # 如果为 true，消息无法路由时会返回
+  immediate: false     # 如果为 true，消息无法立即消费时会返回
+
+# 消费者配置
+consumer:
+  auto_ack: false      # 是否自动确认
+  prefetch_count: 10   # 预取消息数量
+  prefetch_size: 0     # 预取消息大小（0表示不限制）
+
+# 重连配置
+reconnect:
+  max_retries: 5       # 最大重试次数
+  interval: 5          # 重试间隔（秒）
+  
+# 队列默认配置
+queue:
+  durable: true        # 是否持久化
+  auto_delete: false   # 是否自动删除
+  exclusive: false     # 是否排他
+  no_wait: false       # 是否等待服务器确认
+
+# 交换机默认配置
+exchange:
+  durable: true        # 是否持久化
+  auto_delete: false   # 是否自动删除
+  internal: false      # 是否内部使用
+  no_wait: false       # 是否等待服务器确认
