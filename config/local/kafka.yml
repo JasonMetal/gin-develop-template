@@ -1,5 +1,5 @@
 brokers:
-  - host: "localhost"
+  - host: "127.0.0.1"
     port: 9092
 
 # SSL/TLS配置
