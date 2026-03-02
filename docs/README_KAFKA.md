@@ -166,7 +166,7 @@ A: 重要消息使用同步，高吞吐量场景使用异步。
 ### Q: 如何处理发送失败？
 A: 始终检查返回的error，根据业务需要决定重试策略。
 
-更多问题请查看 [完整文档](docs/KAFKA_INTEGRATION_GUIDE.md)。
+更多问题请查看 [完整文档](KAFKA_INTEGRATION_GUIDE.md)。
 
 ## 版本历史
 

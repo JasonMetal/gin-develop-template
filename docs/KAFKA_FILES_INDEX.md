@@ -276,7 +276,7 @@ gin-develop-template/
 → 查看 [`KAFKA_QUICK_REFERENCE.md`](KAFKA_QUICK_REFERENCE.md)
 
 **深入学习**:
-→ 阅读 [`docs/KAFKA_INTEGRATION_GUIDE.md`](KAFKA_INTEGRATION_GUIDE.md)
+→ 阅读 [`KAFKA_INTEGRATION_GUIDE.md`](KAFKA_INTEGRATION_GUIDE.md)
 
 **查看测试结果**:
 → 查看 [`tests/kafka/KAFKA_TEST_REPORT.md`](tests/kafka/KAFKA_TEST_REPORT.md)
