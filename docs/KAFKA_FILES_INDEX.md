@@ -116,7 +116,7 @@ version:        # Kafka 版本
 |------|------|------|--------|
 | README_KAFKA.md | `./` | 快速入门 | ⭐⭐⭐⭐⭐ |
 | KAFKA_QUICK_REFERENCE.md | `./` | 快速参考 | ⭐⭐⭐⭐⭐ |
-| KAFKA_INTEGRATION_GUIDE.md | `docs/` | 完整使用指南 | ⭐⭐⭐⭐ |
+| KAFKA_INTEGRATION_GUIDE.md | `/` | 完整使用指南 | ⭐⭐⭐⭐ |
 | KAFKA_TEST_REPORT.md | `tests/kafka/` | 详细测试报告 | ⭐⭐⭐ |
 | KAFKA_INTEGRATION_SUMMARY.md | `./` | 集成总结 | ⭐⭐⭐ |
 | CHANGELOG_KAFKA.md | `./` | 变更日志 | ⭐⭐ |
@@ -276,7 +276,7 @@ gin-develop-template/
 → 查看 [`KAFKA_QUICK_REFERENCE.md`](KAFKA_QUICK_REFERENCE.md)
 
 **深入学习**:
-→ 阅读 [`docs/KAFKA_INTEGRATION_GUIDE.md`](docs/KAFKA_INTEGRATION_GUIDE.md)
+→ 阅读 [`docs/KAFKA_INTEGRATION_GUIDE.md`](KAFKA_INTEGRATION_GUIDE.md)
 
 **查看测试结果**:
 → 查看 [`tests/kafka/KAFKA_TEST_REPORT.md`](tests/kafka/KAFKA_TEST_REPORT.md)
