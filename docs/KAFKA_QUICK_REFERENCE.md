@@ -143,7 +143,7 @@ bash tests/kafka/run_tests.sh
 
 ## 文档链接
 
-- 📖 [完整使用指南](docs/KAFKA_INTEGRATION_GUIDE.md)
+- 📖 [完整使用指南](KAFKA_INTEGRATION_GUIDE.md)
 - 📊 [测试报告](tests/kafka/KAFKA_TEST_REPORT.md)
 - 📋 [集成总结](KAFKA_INTEGRATION_SUMMARY.md)
 - 🚀 [快速入门](README_KAFKA.md)
